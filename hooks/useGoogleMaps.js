@@ -1,0 +1,12 @@
+import { useJsApiLoader } from '@react-google-maps/api';
+
+const libraries = ['places', 'directions', 'geocoding'];
+
+export const useGoogleMaps = () => {
+    const { isLoaded, loadError } = useJsApiLoader({
+        googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
+        libraries,
+    });
+
+    return { isLoaded, loadError };
+};
