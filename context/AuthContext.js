@@ -5,7 +5,7 @@ import { auth, db } from '../firebase/config';
 import { useRouter } from 'next/router';
 
 const AuthContext = createContext();
-const SUPER_ADMIN_EMAIL = "engrmukulgoel@gmail.com"; // <-- IMPORTANT: Change this to your email
+const SUPER_ADMIN_EMAIL = "engrmukulgoel@gmail.com";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -19,12 +19,21 @@ export const AuthProvider = ({ children }) => {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const dbUser = docSnap.data();
-          // Override role to admin if the email matches SUPER_ADMIN_EMAIL
           const finalRole = firebaseUser.email === SUPER_ADMIN_EMAIL ? 'admin' : dbUser.role;
           setUser({ ...firebaseUser, ...dbUser, role: finalRole });
         } else {
-          // New user, possibly from Google sign-in
-          setUser(firebaseUser);
+          // New user from Google sign-in
+          const assignedRole = firebaseUser.email === SUPER_ADMIN_EMAIL ? 'admin' : 'customer';
+          const newUser = {
+            uid: firebaseUser.uid,
+            name: firebaseUser.displayName,
+            email: firebaseUser.email,
+            role: assignedRole,
+            isProfileComplete: assignedRole !== 'captain',
+            createdAt: new Date(),
+          };
+          await setDoc(docRef, newUser);
+          setUser({ ...firebaseUser, ...newUser });
         }
       } else {
         setUser(null);
@@ -34,36 +43,24 @@ export const AuthProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
-  const signInWithGoogle = async (role = 'customer') => {
+  const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    const userCredential = await signInWithPopup(auth, provider);
-    const firebaseUser = userCredential.user;
-    const docRef = doc(db, 'users', firebaseUser.uid);
-    const docSnap = await getDoc(docRef);
-
-    if (!docSnap.exists()) {
-      // If user is new, check if they are the super admin
-      const assignedRole = firebaseUser.email === SUPER_ADMIN_EMAIL ? 'admin' : role;
-      await setDoc(docRef, {
-          uid: firebaseUser.uid,
-          name: firebaseUser.displayName,
-          email: firebaseUser.email,
-          role: assignedRole,
-          isProfileComplete: assignedRole !== 'captain',
-          createdAt: new Date(),
-      });
-    }
+    await signInWithPopup(auth, provider);
   };
   
-  // Other functions (login, signup, logout) remain largely the same...
   const signup = async (email, password, name) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     await setDoc(doc(db, 'users', user.uid), { uid: user.uid, name, email, role: 'customer', createdAt: new Date() });
     return user;
   };
+
   const login = (email, password) => signInWithEmailAndPassword(auth, email, password);
-  const logout = async () => { await signOut(auth); router.push('/login'); };
+  
+  const logout = async () => { 
+    await signOut(auth);
+    router.push('/login'); 
+  };
 
   const value = { user, loading, signup, login, signInWithGoogle, logout };
 
