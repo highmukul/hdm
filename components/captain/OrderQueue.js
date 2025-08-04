@@ -1,40 +1,52 @@
 import { useAvailableOrders } from '../../hooks/useAvailableOrders';
 import OrderCard from './OrderCard';
+import { FiRefreshCw, FiAlertCircle } from 'react-icons/fi';
 
 const OrderQueue = () => {
-    const { orders, loading, error } = useAvailableOrders();
-    
-    // This would be managed in the captain's state
-    const activeDelivery = null; 
-
-    if (loading) return <p>Searching for available orders...</p>;
-    if (error) return <p className="text-red-500">Could not fetch orders.</p>;
+    const { orders, loading, error, refreshOrders } = useAvailableOrders();
 
     return (
-        <div>
-            {/* Active Delivery */}
-            {activeDelivery && (
-                <div className="mb-10">
-                    <h2 className="text-2xl font-bold mb-4">Active Delivery</h2>
-                    <OrderCard order={activeDelivery} isActive={true} />
+        <div className="space-y-6">
+            <div className="flex justify-between items-center">
+                <h2 className="text-xl font-bold text-gray-800">Available Orders</h2>
+                <button 
+                    onClick={refreshOrders} 
+                    disabled={loading}
+                    className="flex items-center text-sm text-blue-600 font-semibold disabled:opacity-50"
+                >
+                    <FiRefreshCw className={`mr-2 ${loading ? 'animate-spin' : ''}`} />
+                    Refresh
+                </button>
+            </div>
+
+            {loading && !orders.length ? (
+                // Skeleton Loader
+                <div className="space-y-4">
+                    {[...Array(3)].map((_, i) => (
+                        <div key={i} className="bg-white p-4 rounded-xl shadow-sm animate-pulse">
+                            <div className="h-4 bg-gray-200 rounded w-3/4 mb-3"></div>
+                            <div className="h-3 bg-gray-200 rounded w-1/2 mb-4"></div>
+                            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+                        </div>
+                    ))}
+                </div>
+            ) : error ? (
+                <div className="text-center py-10 bg-red-50 text-red-700 rounded-lg">
+                    <FiAlertCircle className="mx-auto text-4xl mb-2" />
+                    <p>Error fetching orders. Please try again.</p>
+                </div>
+            ) : orders.length > 0 ? (
+                <div className="space-y-4">
+                    {orders.map(order => (
+                        <OrderCard key={order.id} order={order} />
+                    ))}
+                </div>
+            ) : (
+                <div className="text-center py-16 bg-white rounded-xl shadow-sm">
+                    <h3 className="text-lg font-semibold text-gray-800">No Orders Available</h3>
+                    <p className="text-gray-500 mt-1">We'll notify you when new orders come in.</p>
                 </div>
             )}
-            
-            {/* Available Orders */}
-            <div>
-                <h2 className="text-2xl font-bold mb-4">Available for Pickup</h2>
-                {orders.length > 0 ? (
-                    <div className="space-y-6">
-                        {orders.map(order => (
-                            <OrderCard key={order.id} order={order} />
-                        ))}
-                    </div>
-                ) : (
-                    <div className="text-center py-10 bg-white rounded-lg shadow-md">
-                        <p className="text-gray-500">No available orders right now. We&apos;ll notify you when one comes in!</p>
-                    </div>
-                )}
-            </div>
         </div>
     );
 };

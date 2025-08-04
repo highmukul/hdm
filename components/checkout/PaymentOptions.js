@@ -1,33 +1,62 @@
-import { useState } from 'react';
-import { FaCreditCard, FaMoneyBillWave } from 'react-icons/fa';
+import { FiCreditCard, FiDollarSign, FiBox } from 'react-icons/fi';
 
-const PaymentOptions = () => {
-  const [selectedMethod, setSelectedMethod] = useState('cod');
+const paymentMethods = [
+    { 
+        id: 'cod', 
+        title: 'Cash on Delivery', 
+        description: 'Pay directly to the delivery person.', 
+        icon: <FiDollarSign /> 
+    },
+    { 
+        id: 'card', 
+        title: 'Credit/Debit Card', 
+        description: 'Pay securely online. All major cards accepted.', 
+        icon: <FiCreditCard /> 
+    },
+    {
+        id: 'upi',
+        title: 'UPI',
+        description: 'Pay with any UPI app like GPay, PhonePe.',
+        icon: <FiBox /> // Placeholder icon, consider a better one for UPI
+    }
+];
 
+const PaymentOptions = ({ selectedMethod, onSelectMethod }) => {
   return (
-    <div className="space-y-4">
-      <label className={`flex items-center p-4 border rounded-lg cursor-pointer ${selectedMethod === 'cod' ? 'border-indigo-500 ring-2 ring-indigo-500' : ''}`}>
-        <input type="radio" name="paymentMethod" value="cod" checked={selectedMethod === 'cod'} onChange={() => setSelectedMethod('cod')} className="sr-only" />
-        <FaMoneyBillWave className="w-6 h-6 mr-4 text-green-500" />
-        <div>
-          <h4 className="font-semibold">Cash on Delivery</h4>
-          <p className="text-sm text-gray-500">Pay with cash upon delivery.</p>
-        </div>
-      </label>
-
-      <label className={`flex items-center p-4 border rounded-lg cursor-pointer ${selectedMethod === 'card' ? 'border-indigo-500 ring-2 ring-indigo-500' : ''}`}>
-        <input type="radio" name="paymentMethod" value="card" checked={selectedMethod === 'card'} onChange={() => setSelectedMethod('card')} className="sr-only" />
-        <FaCreditCard className="w-6 h-6 mr-4 text-blue-500" />
-        <div>
-          <h4 className="font-semibold">Credit/Debit Card</h4>
-          <p className="text-sm text-gray-500">Pay securely with your card.</p>
-        </div>
-      </label>
+    <div className="bg-white p-6 rounded-2xl shadow-sm">
+      <h2 className="text-xl font-semibold mb-5 text-gray-800">Choose Payment Method</h2>
+      <div className="space-y-4">
+        {paymentMethods.map(method => (
+          <label 
+            key={method.id} 
+            className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                selectedMethod === method.id 
+                ? 'border-blue-500 bg-blue-50' 
+                : 'border-gray-200 hover:border-gray-300'
+            }`}
+          >
+            <input 
+              type="radio" 
+              name="paymentMethod" 
+              value={method.id} 
+              checked={selectedMethod === method.id} 
+              onChange={() => onSelectMethod(method.id)} 
+              className="sr-only" 
+            />
+            <div className="text-blue-600 mr-4 text-xl">
+                {method.icon}
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-800">{method.title}</h4>
+              <p className="text-sm text-gray-500">{method.description}</p>
+            </div>
+          </label>
+        ))}
+      </div>
       
-      {/* Placeholder for card details form */}
       {selectedMethod === 'card' && (
-        <div className="p-4 border-t mt-4">
-          <p className="text-center text-gray-500">Card payment integration coming soon.</p>
+        <div className="p-4 border-t mt-6 text-center text-gray-500">
+          <p>Online payment feature is currently under development.</p>
         </div>
       )}
     </div>

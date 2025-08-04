@@ -1,43 +1,29 @@
-import { useState } from 'react';
-import ProductCard from '../products/ProductCard';
-import { ProductSkeleton } from '../common/components';
+import ProductCard from './ProductCard';
+import { ProductSkeleton } from './ProductSkeleton';
 
-const ProductGrid = ({ filters, initialProducts, initialLoading }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+const ProductGrid = ({ products, loading }) => {
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+        {Array.from({ length: 10 }).map((_, i) => <ProductSkeleton key={i} />)}
+      </div>
+    );
+  }
 
-  const filteredAndSortedProducts = initialProducts
-    .filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    .filter(p => filters.category === 'All' || p.category === filters.category)
-    .sort((a, b) => {
-      if (filters.sortBy === 'price-asc') return a.price - b.price;
-      if (filters.sortBy === 'price-desc') return b.price - a.price;
-      return 0;
-    });
+  if (!products || products.length === 0) {
+    return (
+      <div className="text-center py-16 px-6 bg-white rounded-lg shadow-sm">
+        <h3 className="text-xl font-semibold text-gray-800">No Products Found</h3>
+        <p className="text-gray-500 mt-2">There are no products available in this category.</p>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <input
-        type="text"
-        placeholder="Search within our products..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="w-full p-4 mb-8 border-2 border-border rounded-lg bg-card-background text-text-primary focus:ring-primary focus:border-primary"
-      />
-      {initialLoading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-          {Array.from({ length: 8 }).map((_, i) => <ProductSkeleton key={i} />)}
-        </div>
-      ) : filteredAndSortedProducts.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-          {filteredAndSortedProducts.map(product => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-16 card">
-            <p className="text-text-secondary">No products found. Try adjusting your filters.</p>
-        </div>
-      )}
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+      {products.map(product => (
+        <ProductCard key={product.id} product={product} />
+      ))}
     </div>
   );
 };

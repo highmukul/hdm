@@ -3,21 +3,21 @@ import Link from 'next/link';
 
 const CtaSection = () => {
     return (
-        <section className="bg-indigo-600 text-white">
+        <section className="bg-gradient-to-r from-green-500 to-teal-500 text-white">
             <div className="container mx-auto px-4 py-20 text-center">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.8 }}
-                    transition={{ duration: 0.7 }}
+                    transition={{ duration: 0.7, ease: 'easeOut' }}
                 >
-                    <h2 className="text-4xl font-extrabold mb-4">Ready to Get Started?</h2>
-                    <p className="text-lg text-indigo-200 mb-8 max-w-2xl mx-auto">
-                        Join thousands of happy customers and get your essentials delivered in minutes.
+                    <h2 className="text-3xl md:text-4xl font-bold mb-4">Your Daily Needs, Delivered in Minutes</h2>
+                    <p className="text-lg text-green-100 mb-8 max-w-2xl mx-auto">
+                        From groceries to essentials, get everything you need delivered to your doorstep, day or night.
                     </p>
                     <Link href="/shop">
-                        <a className="bg-white text-indigo-600 text-lg font-bold py-4 px-10 rounded-full hover:bg-gray-100 transition-transform transform hover:scale-105 inline-block">
-                            Start Shopping Now
+                        <a className="bg-white text-green-600 text-lg font-bold py-4 px-10 rounded-full hover:bg-gray-100 transition-transform transform hover:scale-105 inline-block shadow-lg">
+                            Place Your First Order
                         </a>
                     </Link>
                 </motion.div>

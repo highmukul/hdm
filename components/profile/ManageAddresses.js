@@ -3,92 +3,80 @@ import { useUserAddresses } from '../../hooks/useUserAddresses';
 import { useAuth } from '../../context/AuthContext';
 import { db } from '../../firebase/config';
 import { doc, setDoc, deleteDoc } from 'firebase/firestore';
-import { FaPlus, FaTrash } from 'react-icons/fa';
+import { FiPlus, FiTrash2, FiMapPin } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { useGoogleMaps } from '../../hooks/useGoogleMaps';
 import { Autocomplete } from '@react-google-maps/api';
 
 const ManageAddresses = () => {
     const { user } = useAuth();
-    const { addresses, loading } = useUserAddresses(user?.uid);
+    const { addresses, loading, addAddress, removeAddress } = useUserAddresses(user?.uid);
     const { isLoaded } = useGoogleMaps();
-    const [isAddingNew, setIsAddingNew] = useState(false);
+    const [isAdding, setIsAdding] = useState(false);
     const autocompleteRef = useRef(null);
 
-    const handlePlaceSelected = () => {
+    const handlePlaceSelected = async () => {
+        if (!autocompleteRef.current) return;
         const place = autocompleteRef.current.getPlace();
+        
         if (!place.geometry) {
-            toast.error("Please select a valid address.");
+            toast.error("Invalid address. Please select from the dropdown.");
             return;
         }
 
-        const location = { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() };
-        const addressComponents = { street: place.name, fullAddress: place.formatted_address, city: '', state: '', zip: '' };
-        place.address_components.forEach(component => {
-            const types = component.types;
-            if (types.includes('locality')) addressComponents.city = component.long_name;
-            if (types.includes('administrative_area_level_1')) addressComponents.state = component.short_name;
-            if (types.includes('postal_code')) addressComponents.zip = component.long_name;
-        });
-        
-        saveNewAddress({ ...addressComponents, location });
+        const newAddress = {
+            id: Date.now().toString(),
+            fullAddress: place.formatted_address,
+            location: {
+                lat: place.geometry.location.lat(),
+                lng: place.geometry.location.lng(),
+            },
+        };
+
+        await addAddress(newAddress);
+        setIsAdding(false);
     };
 
-    const saveNewAddress = async (addressData) => {
-        if (!user) return;
-        const addressId = Date.now().toString();
-        const newAddressRef = doc(db, 'users', user.uid, 'addresses', addressId);
-        try {
-            await setDoc(newAddressRef, { ...addressData, id: addressId });
-            toast.success('Address saved!');
-            setIsAddingNew(false);
-        } catch {
-            toast.error('Could not save address.');
-        }
-    };
-    
-    const handleDeleteAddress = async (addressId) => {
-        if(!user) return;
-        const addressRef = doc(db, 'users', user.uid, 'addresses', addressId);
-        try {
-            await deleteDoc(addressRef);
-            toast.success('Address removed.');
-        } catch {
-            toast.error('Could not remove address.');
-        }
-    }
-
-    if (loading || !isLoaded) return <p className="text-text-secondary">Loading addresses...</p>;
+    if (loading || !isLoaded) return <p>Loading addresses...</p>;
 
     return (
         <div>
-            <h2 className="text-2xl font-bold mb-6 text-text-primary">Manage Addresses</h2>
+            <h2 className="text-2xl font-bold mb-6 text-gray-800">My Addresses</h2>
+            
             <div className="space-y-4">
                 {addresses.map(address => (
-                    <div key={address.id} className="p-4 border border-border rounded-lg flex justify-between items-center">
-                        <div>
-                            <p className="font-semibold text-text-primary">{address.street}</p>
-                            <p className="text-sm text-text-secondary">{address.fullAddress}</p>
+                    <div key={address.id} className="p-4 border border-gray-200 rounded-lg flex justify-between items-center bg-gray-50">
+                        <div className="flex items-center">
+                            <FiMapPin className="text-gray-500 mr-4" />
+                            <p className="text-sm text-gray-700">{address.fullAddress}</p>
                         </div>
-                        <button onClick={() => handleDeleteAddress(address.id)} className="text-red-500 hover:text-red-700"><FaTrash /></button>
+                        <button onClick={() => removeAddress(address.id)} className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-100">
+                            <FiTrash2 />
+                        </button>
                     </div>
                 ))}
             </div>
 
             <div className="mt-8">
-                {isAddingNew ? (
-                     <div className="mt-6 p-4 border-t border-border space-y-4">
-                        <h3 className="font-semibold text-text-primary">Add a New Address</h3>
-                        <Autocomplete onLoad={(ref) => autocompleteRef.current = ref} onPlaceChanged={handlePlaceSelected} options={{ componentRestrictions: { country: 'in' } }}>
-                           <input type="text" placeholder="Start typing your address..." className="input-field w-full" />
+                {isAdding ? (
+                    <div className="p-4 border-t border-gray-200">
+                        <h3 className="font-semibold text-gray-700 mb-3">Add a New Address</h3>
+                        <Autocomplete
+                            onLoad={(ref) => (autocompleteRef.current = ref)}
+                            onPlaceChanged={handlePlaceSelected}
+                            options={{ componentRestrictions: { country: 'in' } }}
+                        >
+                            <input
+                                type="text"
+                                placeholder="Search for your address or landmark..."
+                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            />
                         </Autocomplete>
-                         <div className="flex justify-end">
-                           <button type="button" onClick={() => setIsAddingNew(false)} className="py-2 px-4 bg-gray-200 dark:bg-gray-700 text-text-primary rounded-lg hover:opacity-90">Cancel</button>
-                        </div>
-                   </div>
+                        <button onClick={() => setIsAdding(false)} className="mt-3 text-sm text-gray-600">Cancel</button>
+                    </div>
                 ) : (
-                    <button onClick={() => setIsAddingNew(true)} className="w-full text-center py-3 px-4 font-medium rounded-md border-2 border-dashed border-border hover:bg-background transition-colors flex items-center justify-center text-text-secondary">
-                        <FaPlus className="mr-2" /> Add a new address
+                    <button onClick={() => setIsAdding(true)} className="w-full flex items-center justify-center py-3 px-4 font-medium rounded-lg border-2 border-dashed border-gray-300 hover:bg-gray-50 text-gray-600">
+                        <FiPlus className="mr-2" /> Add New Address
                     </button>
                 )}
             </div>

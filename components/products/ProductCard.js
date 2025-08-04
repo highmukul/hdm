@@ -1,53 +1,60 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
 import { useCart } from '../../context/CartContext';
-import { FaPlus, FaMinus } from 'react-icons/fa';
-import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
+import { FiPlus } from 'react-icons/fi';
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
-  const [quantity, setQuantity] = useState(1);
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
     e.preventDefault();
     if (product.stock > 0) {
-        addToCart(product, quantity);
-        toast.success(`${quantity} x ${product.name} added!`);
+      addToCart(product, 1);
+      toast.success(`${product.name} added to cart!`);
     } else {
-        toast.error("Out of stock!");
+      toast.error("Sorry, this item is out of stock.");
     }
   };
 
   return (
-    <motion.div 
-        whileHover={{ y: -5 }} 
-        className="card flex flex-col h-full group"
+    <motion.div
+      whileHover={{ y: -5 }}
+      className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full group border border-transparent hover:border-green-500 transition-colors"
     >
       <Link href={`/products/${product.id}`} passHref>
         <a className="block text-left flex-grow">
-          <div className="relative w-full h-40 overflow-hidden rounded-t-xl">
-            <Image src={product.imageUrls?.[0] || '/placeholder.png'} alt={product.name} layout="fill" objectFit="cover" className="transition-transform duration-300 group-hover:scale-105"/>
+          {/* Image Container */}
+          <div className="relative w-full h-36 md:h-40">
+            <Image
+              src={product.imageUrls?.[0] || '/placeholder.png'}
+              alt={product.name}
+              layout="fill"
+              objectFit="cover"
+              className="transition-transform duration-300 group-hover:scale-105"
+            />
           </div>
-          <div className="p-4">
-            <h3 className="font-bold text-lg truncate mb-1 text-text-primary">{product.name}</h3>
-            <p className="text-text-secondary text-sm">{product.category}</p>
+          {/* Content */}
+          <div className="p-4 flex flex-col flex-grow">
+            <h3 className="font-semibold text-base text-gray-800 truncate mb-1">{product.name}</h3>
+            <p className="text-sm text-gray-500 mb-2">{product.unit || '1 unit'}</p>
+            <div className="flex-grow" />
+            <div className="flex justify-between items-center mt-2">
+              <p className="font-bold text-gray-800 text-lg">₹{product.price.toFixed(2)}</p>
+              <button
+                onClick={handleAddToCart}
+                disabled={product.stock === 0}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-green-100 text-green-600 hover:bg-green-500 hover:text-white transition-colors disabled:bg-gray-200 disabled:text-gray-400"
+                aria-label="Add to cart"
+              >
+                <FiPlus size={20} />
+              </button>
+            </div>
           </div>
         </a>
       </Link>
-      <div className="px-4 pb-4 mt-auto">
-        <div className="flex justify-between items-center mb-3">
-            <p className="font-semibold text-primary text-xl">₹{product.price.toFixed(2)}</p>
-            <div className="flex items-center border border-border rounded-lg">
-                <button onClick={(e) => {e.stopPropagation(); setQuantity(q => Math.max(1, q - 1))}} className="p-2 text-text-secondary hover:text-primary"><FaMinus size={12}/></button>
-                <span className="px-3 font-bold text-text-primary">{quantity}</span>
-                <button onClick={(e) => {e.stopPropagation(); setQuantity(q => Math.min(5, q + 1))}} className="p-2 text-text-secondary hover:text-primary"><FaPlus size={12}/></button>
-            </div>
-        </div>
-        <button onClick={handleAddToCart} disabled={product.stock === 0} className="w-full btn-primary disabled:opacity-50 disabled:scale-100">Add to Cart</button>
-      </div>
     </motion.div>
   );
 };

@@ -1,66 +1,59 @@
+import { useState, useEffect } from 'react';
 import Layout from '../components/layout/Layout';
 import ProductGrid from '../components/products/ProductGrid';
-import ProductCarousel from '../components/products/ProductCarousel';
-import FilterSidebar from '../components/products/FilterSidebar';
-import { useState } from 'react';
+import { db } from '../firebase/config';
+import { collection, onSnapshot } from 'firebase/firestore';
 import { useProducts } from '../hooks/useProducts';
-import { FaFilter } from 'react-icons/fa';
-import { AnimatePresence, motion } from 'framer-motion';
 
 const ShopPage = () => {
-  const [filters, setFilters] = useState({ category: 'All', sortBy: 'default' });
-  const { products, loading } = useProducts();
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const { products, loading: productsLoading } = useProducts();
+    const [categories, setCategories] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState('All');
+    const [loadingCategories, setLoadingCategories] = useState(true);
 
-  const freshProducts = products.slice(0, 8); 
-  const trendingProducts = products.slice(8, 16);
+    useEffect(() => {
+        const unsubscribe = onSnapshot(collection(db, 'categories'), (snapshot) => {
+            const fetchedCategories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setCategories([{ id: 'All', name: 'All' }, ...fetchedCategories]);
+            setLoadingCategories(false);
+        });
+        return unsubscribe;
+    }, []);
 
-  return (
-    <Layout>
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-12 space-y-8">
-            <ProductCarousel title="Today's Fresh Products" products={freshProducts} loading={loading} />
-            <ProductCarousel title="Trending Near You" products={trendingProducts} loading={loading} />
-        </div>
+    const filteredProducts = selectedCategory === 'All'
+        ? products
+        : products.filter(p => p.category === selectedCategory);
 
-        <div className="flex flex-col md:flex-row items-start gap-8">
-            <div className="w-full md:w-72 lg:w-80 flex-shrink-0">
-                <div className="hidden md:block sticky top-24">
-                    <FilterSidebar filters={filters} setFilters={setFilters} />
-                </div>
-                <div className="md:hidden mb-6 text-right">
-                    <button onClick={() => setIsFilterOpen(true)} className="btn-primary inline-flex items-center">
-                        <FaFilter className="mr-2"/> Filters & Sort
-                    </button>
-                </div>
+    return (
+        <Layout>
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <aside className="mb-8">
+                    <h2 className="text-xl font-semibold mb-4">Categories</h2>
+                    {loadingCategories ? <p>Loading categories...</p> : (
+                        <div className="flex flex-wrap gap-2">
+                            {categories.map(category => (
+                                <button
+                                    key={category.id}
+                                    onClick={() => setSelectedCategory(category.name)}
+                                    className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
+                                        selectedCategory === category.name
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                    }`}
+                                >
+                                    {category.name}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </aside>
+
+                <main>
+                    <ProductGrid products={filteredProducts} loading={productsLoading} />
+                </main>
             </div>
-
-            <AnimatePresence>
-                {isFilterOpen && (
-                    <motion.div 
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/50 z-40 md:hidden" 
-                        onClick={() => setIsFilterOpen(false)}
-                    >
-                        <motion.div 
-                            initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
-                            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                            className="fixed top-0 right-0 h-full bg-card-background w-full max-w-sm p-6 z-50 overflow-y-auto" 
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <FilterSidebar filters={filters} setFilters={setFilters} />
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            <main className="flex-1 w-full">
-                <h2 className="text-3xl font-bold mb-6 text-text-primary">All Products</h2>
-                <ProductGrid filters={filters} initialProducts={products} initialLoading={loading} />
-            </main>
-        </div>
-      </div>
-    </Layout>
-  );
+        </Layout>
+    );
 };
+
 export default ShopPage;

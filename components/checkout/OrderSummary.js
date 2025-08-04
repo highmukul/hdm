@@ -1,44 +1,52 @@
-const OrderSummary = ({ cartItems, cartTotal }) => {
-    const taxRate = 0.05;
-    const deliveryFee = 15.00;
+import { useCart } from '../../context/CartContext';
+
+const OrderSummary = () => {
+    const { cartItems, cartTotal } = useCart();
+
+    // These values could come from a global settings context in a real app
+    const taxRate = 0.05; // 5% GST
+    const deliveryFee = cartTotal > 499 ? 0 : 35; // Free delivery for orders > 499
     const platformFee = 5.00;
 
     const subtotal = cartTotal;
     const tax = subtotal * taxRate;
     const total = subtotal + tax + deliveryFee + platformFee;
-  
+
     return (
-      <div className="bg-white shadow-md rounded-lg p-6">
-        <h2 className="text-xl font-semibold mb-6">Price Details</h2>
-        
-        <div className="space-y-3 border-t pt-6">
-            <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Price ({cartItems.length} items)</span>
-                <span className="font-medium">₹{subtotal.toFixed(2)}</span>
-            </div>
-             <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Discount</span>
-                <span className="font-medium text-green-600">- ₹0.00</span>
-            </div>
-            <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Taxes</span>
-                <span className="font-medium">₹{tax.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Delivery Fee</span>
-                <span className="font-medium">₹{deliveryFee.toFixed(2)}</span>
-            </div>
-             <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Platform Fee</span>
-                <span className="font-medium">₹{platformFee.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between font-bold text-lg border-t pt-4 mt-2">
-                <span>Total Amount</span>
-                <span>₹{total.toFixed(2)}</span>
+        <div className="bg-white rounded-2xl shadow-sm p-6">
+            <h2 className="text-xl font-semibold mb-5 text-gray-800">Price Details</h2>
+            
+            <div className="space-y-3">
+                <div className="flex justify-between text-gray-600">
+                    <span>Subtotal ({cartItems.length} items)</span>
+                    <span className="font-medium">₹{subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                    <span>Platform Fee</span>
+                    <span className="font-medium">₹{platformFee.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                    <span>GST (5%)</span>
+                    <span className="font-medium">₹{tax.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                    <span>Delivery Fee</span>
+                    {deliveryFee === 0 ? (
+                        <span className="font-medium text-green-600">FREE</span>
+                    ) : (
+                        <span className="font-medium">₹{deliveryFee.toFixed(2)}</span>
+                    )}
+                </div>
+                
+                <div className="border-t border-gray-200 my-4 pt-4">
+                    <div className="flex justify-between font-bold text-lg text-gray-800">
+                        <span>Total Amount</span>
+                        <span>₹{total.toFixed(2)}</span>
+                    </div>
+                </div>
             </div>
         </div>
-      </div>
     );
-  };
-  
-  export default OrderSummary;
+};
+
+export default OrderSummary;

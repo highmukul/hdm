@@ -1,54 +1,77 @@
-const FilterSidebar = ({ filters, setFilters }) => {
-    const handleCategoryChange = (e) => {
-      setFilters(prev => ({ ...prev, category: e.target.value }));
-    };
-  
-    const handleSortChange = (e) => {
-      setFilters(prev => ({ ...prev, sortBy: e.target.value }));
-    };
-  
-    // In a real app, categories would be fetched from your backend
-    const categories = ['All', 'Vegetables & Fruits', 'Dairy & Breakfast', 'Munchies', 'Cold Drinks & Juices'];
-  
-    return (
-      <aside className="w-64 p-6 bg-white rounded-lg shadow-md">
-        <h3 className="text-xl font-bold mb-6">Filters</h3>
-        
-        {/* Category Filter */}
-        <div className="mb-8">
-          <h4 className="font-semibold mb-4">Category</h4>
-          <div className="space-y-2">
-            {categories.map(cat => (
-              <label key={cat} className="flex items-center">
-                <input
-                  type="radio"
-                  name="category"
-                  value={cat}
-                  checked={filters.category === cat}
-                  onChange={handleCategoryChange}
-                  className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                />
-                <span className="ml-3 text-sm text-gray-600">{cat}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-  
-        {/* Sort By */}
-        <div>
-          <h4 className="font-semibold mb-4">Sort By</h4>
-          <select 
-            value={filters.sortBy} 
-            onChange={handleSortChange}
-            className="w-full p-2 border rounded-md"
-          >
-            <option value="default">Default</option>
-            <option value="price-asc">Price: Low to High</option>
-            <option value="price-desc">Price: High to Low</option>
-          </select>
-        </div>
-      </aside>
-    );
+import { useState, useEffect } from 'react';
+
+const categories = [
+  'All', 
+  'Vegetables & Fruits', 
+  'Dairy & Breakfast', 
+  'Munchies', 
+  'Cold Drinks & Juices',
+  'Instant & Frozen Food',
+  'Tea, Coffee & Health Drinks',
+  'Bakery & Biscuits'
+];
+
+const sortOptions = [
+  { value: 'name_asc', label: 'Alphabetical (A-Z)' },
+  { value: 'name_desc', label: 'Alphabetical (Z-A)' },
+  { value: 'price_asc', label: 'Price: Low to High' },
+  { value: 'price_desc', label: 'Price: High to Low' },
+];
+
+const FilterSidebar = ({ filters, onFilterChange }) => {
+  const [internalFilters, setInternalFilters] = useState(filters);
+
+  useEffect(() => {
+    onFilterChange(internalFilters);
+  }, [internalFilters, onFilterChange]);
+
+  const handleCategoryChange = (category) => {
+    setInternalFilters(prev => ({ ...prev, category }));
   };
-  
-  export default FilterSidebar;
+
+  const handleSortChange = (e) => {
+    setInternalFilters(prev => ({ ...prev, sortBy: e.target.value }));
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Category Filter */}
+      <div>
+        <h4 className="font-semibold mb-4 text-gray-800">Category</h4>
+        <div className="space-y-3">
+          {categories.map(cat => (
+            <button
+              key={cat}
+              onClick={() => handleCategoryChange(cat)}
+              className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                internalFilters.category === cat
+                  ? 'bg-green-100 text-green-700 font-semibold'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Sort By */}
+      <div>
+        <h4 className="font-semibold mb-4 text-gray-800">Sort By</h4>
+        <select
+          value={internalFilters.sortBy}
+          onChange={handleSortChange}
+          className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-green-500 focus:outline-none"
+        >
+          {sortOptions.map(option => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
+};
+
+export default FilterSidebar;

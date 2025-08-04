@@ -1,54 +1,73 @@
-import { FaMapMarkerAlt, FaStore, FaClock } from 'react-icons/fa';
+import { db } from '../../firebase/config';
+import { doc, updateDoc } from 'firebase/firestore';
+import toast from 'react-hot-toast';
+import { FiMapPin, FiNavigation, FiCheckCircle } from 'react-icons/fi';
 
-const OrderCard = ({ order, isActive = false }) => {
-    // Dummy handler
-    const handleAccept = () => {
-        console.log(`Accepted order ${order.id}`);
-    }
+const OrderCard = ({ order, isAssigned = false }) => {
+    const handleUpdateStatus = async (status) => {
+        try {
+            const orderRef = doc(db, 'orders', order.id);
+            await updateDoc(orderRef, { status });
+            toast.success(`Order marked as ${status}!`);
+        } catch (error) {
+            toast.error('Failed to update order status.');
+        }
+    };
+
+    const handleNavigate = () => {
+        const { lat, lng } = order.shippingAddress.location;
+        const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+        window.open(url, '_blank');
+    };
 
     return (
-        <div className={`bg-white shadow-lg rounded-xl overflow-hidden transform transition-all hover:scale-105 ${isActive ? 'border-4 border-green-500' : ''}`}>
-            <div className="p-6">
+        <div className="bg-white shadow-md rounded-xl overflow-hidden">
+            <div className="p-5">
                 <div className="flex justify-between items-start">
                     <div>
-                        <p className="text-sm text-gray-500">Order ID: {order.id.slice(-6).toUpperCase()}</p>
-                        <p className="text-2xl font-bold text-gray-800">₹{order.total.toFixed(2)}</p>
+                        <p className="text-sm text-gray-500">Order #{order.id.slice(-6).toUpperCase()}</p>
+                        <p className="text-xl font-bold text-gray-800">Est. Earning: ₹{order.deliveryFee || '25'}</p>
                     </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                        <FaClock className="mr-2"/>
-                        <span>{new Date(order.createdAt.seconds * 1000).toLocaleTimeString()}</span>
-                    </div>
+                    <span className="text-sm font-semibold bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
+                        {order.status}
+                    </span>
                 </div>
 
-                <div className="mt-6 space-y-4">
-                    <div className="flex items-start">
-                        <FaStore className="w-6 h-6 mr-4 text-indigo-500 mt-1" />
-                        <div>
-                            <p className="font-semibold">Pickup From</p>
-                            <p className="text-gray-600">Hadoti Supermart, Main Market</p>
-                        </div>
-                    </div>
-                    <div className="flex items-start">
-                        <FaMapMarkerAlt className="w-6 h-6 mr-4 text-green-500 mt-1" />
-                        <div>
-                            <p className="font-semibold">Deliver To</p>
-                            <p className="text-gray-600">{order.shippingAddress.street}, {order.shippingAddress.city}</p>
-                        </div>
+                <div className="mt-4">
+                    <div className="flex items-center text-gray-700">
+                        <FiMapPin className="w-5 h-5 mr-3 text-gray-400" />
+                        <span className="text-sm">{order.shippingAddress.fullAddress}</span>
                     </div>
                 </div>
             </div>
 
-            <div className="bg-gray-50 p-4">
-                {isActive ? (
-                    <button className="w-full py-3 text-white font-bold bg-green-600 rounded-lg hover:bg-green-700">
-                        View Delivery Details
+            {isAssigned && (
+                <div className="bg-gray-50 p-3 grid grid-cols-2 gap-2">
+                    <button 
+                        onClick={handleNavigate}
+                        className="flex items-center justify-center py-2.5 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600"
+                    >
+                        <FiNavigation className="mr-2" />
+                        Navigate
                     </button>
-                ) : (
-                    <button onClick={handleAccept} className="w-full btn-primary">
-                        Accept Order
-                    </button>
-                )}
-            </div>
+                    {order.status === 'Out for Delivery' ? (
+                         <button 
+                            onClick={() => handleUpdateStatus('Delivered')}
+                            className="flex items-center justify-center py-2.5 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600"
+                        >
+                            <FiCheckCircle className="mr-2" />
+                            Complete
+                        </button>
+                    ) : (
+                        <button 
+                            onClick={() => handleUpdateStatus('Out for Delivery')}
+                            className="flex items-center justify-center py-2.5 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600"
+                        >
+                            Confirm Pickup
+                        </button>
+                    )}
+                </div>
+            )}
         </div>
     );
 };
