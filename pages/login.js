@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { FaGoogle } from 'react-icons/fa';
-import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { FiMail, FiLock } from 'react-icons/fi';
@@ -12,15 +11,13 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, signInWithGoogle } = useAuth();
-  const router = useRouter();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       await login(email, password);
-      toast.success('Welcome back!');
-      router.push('/shop');
+      // Toast and redirect are now handled in AuthContext
     } catch (error) {
       toast.error(error.message);
     } finally {
@@ -31,8 +28,7 @@ const LoginPage = () => {
   const handleGoogleSignIn = async () => {
     try {
       await signInWithGoogle('customer');
-      toast.success('Signed in successfully!');
-      router.push('/shop');
+      // Toast and redirect are now handled in AuthContext
     } catch {
       toast.error('Failed to sign in with Google.');
     }

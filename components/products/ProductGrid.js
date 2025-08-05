@@ -1,5 +1,5 @@
 import ProductCard from './ProductCard';
-import { ProductSkeleton } from './ProductSkeleton';
+import ProductSkeleton from './ProductSkeleton';
 
 const ProductGrid = ({ products, loading }) => {
   if (loading) {

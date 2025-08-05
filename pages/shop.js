@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Layout from '../components/layout/Layout';
 import ProductGrid from '../components/products/ProductGrid';
 import { db } from '../firebase/config';
@@ -6,7 +7,9 @@ import { collection, onSnapshot } from 'firebase/firestore';
 import { useProducts } from '../hooks/useProducts';
 
 const ShopPage = () => {
-    const { products, loading: productsLoading } = useProducts();
+    const router = useRouter();
+    const { storeId } = router.query;
+    const { products, loading: productsLoading, error } = useProducts(storeId);
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [loadingCategories, setLoadingCategories] = useState(true);
@@ -21,8 +24,8 @@ const ShopPage = () => {
     }, []);
 
     const filteredProducts = selectedCategory === 'All'
-        ? products
-        : products.filter(p => p.category === selectedCategory);
+    ? products // If 'All' is selected, return all products
+    : products?.filter(p => p.category === selectedCategory); // Otherwise, filter based on the 
 
     return (
         <Layout>
@@ -49,6 +52,7 @@ const ShopPage = () => {
                 </aside>
 
                 <main>
+                    {error && <p className="text-red-500">Could not load products. Please try again later.</p>}
                     <ProductGrid products={filteredProducts} loading={productsLoading} />
                 </main>
             </div>

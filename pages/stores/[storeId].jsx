@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Layout from '../../components/layout/Layout';
 import { db } from '../../firebase/config';
 import { collection, onSnapshot, query, orderBy, limit, startAfter } from 'firebase/firestore';
-import { ProductCard } from '../../components/products/ProductCard';
+import ProductCard from '../../components/products/ProductCard';
 import { ProductCardSkeleton } from '../../components/products/ProductCardSkeleton';
 
 const ProductListPage = () => {

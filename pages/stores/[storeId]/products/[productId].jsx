@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Layout from '../../components/layout/Layout';
-import { db } from '../../firebase/config';
+import Layout from '../../../components/layout/Layout';
+import { db } from '../../../firebase/config';
 import { doc, onSnapshot, collection, query, where, orderBy, limit } from 'firebase/firestore';
-import { ProductImageCarousel } from '../../components/products/ProductImageCarousel';
-import { ProductReviews } from '../../components/products/ProductReviews';
-import { useCart } from '../../context/CartContext';
+import { ProductImageCarousel } from '../../../components/products/ProductImageCarousel';
+import { ProductReviews } from '../../../components/products/ProductReviews';
+import { useCart } from '../../../context/CartContext';
 import toast from 'react-hot-toast';
 import { FiShoppingCart, FiZap } from 'react-icons/fi';
 import { motion } from 'framer-motion';
-import ProductCard from '../../components/products/ProductCard';
+import ProductCard from '../../../components/products/ProductCard';
 
 const ProductDetailPage = () => {
     const router = useRouter();

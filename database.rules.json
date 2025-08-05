@@ -8,9 +8,10 @@
       ".read": "auth != null",
       ".write": "auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'"
     },
-    "stores/{storeId}/products/{productId}": {
+    "products": {
       ".read": "auth != null",
-      ".write": "auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'"
+      ".write": "auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'",
+      ".indexOn": ["popularity", "price", "createdAt"]
     },
     "orders/{orderId}": {
       ".read": "auth != null && (request.auth.uid == resource.data.customerId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' || request.auth.uid == resource.data.captainId)",
@@ -19,6 +20,10 @@
     "captains/{captainId}": {
       ".read": "auth != null",
       ".write": "auth != null && auth.uid == captainId"
+    },
+    "analytics": {
+      ".read": "auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'",
+      ".write": "auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'"
     }
   }
 }
