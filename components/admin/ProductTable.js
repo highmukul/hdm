@@ -1,36 +1,45 @@
 import { useState } from 'react';
 import { useProducts } from '../../hooks/useProducts';
-import ProductFormModal from './ProductFormModal';
+import { db, storage } from '../../firebase/config';
+import { doc, deleteDoc } from 'firebase/firestore';
+import { ref, listAll, deleteObject } from 'firebase/storage';
+import toast from 'react-hot-toast';
 import { FiEdit, FiTrash2, FiSearch } from 'react-icons/fi';
 import Image from 'next/image';
 
-const ProductTable = () => {
+const ProductTable = ({ onEdit }) => {
   const { products, loading, error } = useProducts();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const handleOpenModal = (product = null) => {
-    setSelectedProduct(product);
-    setIsModalOpen(true);
-  };
+  const handleDelete = async (product) => {
+    if (!window.confirm(`Are you sure you want to delete "${product.name}"? This action cannot be undone.`)) {
+      return;
+    }
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedProduct(null);
-  };
+    try {
+      // 1. Delete the product document from Firestore
+      await deleteDoc(doc(db, 'stores', product.storeId, 'products', product.id));
 
-  const handleDelete = (productId) => {
-    console.log("Deleting product:", productId);
-    // Add firebase delete logic here
+      // 2. Delete the associated image folder from Firebase Storage
+      const imageFolderRef = ref(storage, `products/${product.id}`);
+      const imageList = await listAll(imageFolderRef);
+      
+      const deletePromises = imageList.items.map((itemRef) => deleteObject(itemRef));
+      await Promise.all(deletePromises);
+
+      toast.success('Product and its images deleted successfully!');
+    } catch (err) {
+      toast.error('Failed to delete product.');
+      console.error('Error deleting product:', err);
+    }
   };
 
   const filteredProducts = products.filter(p =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) return <p className="text-gray-500">Loading products...</p>;
-  if (error) return <p className="text-red-500">Error loading products.</p>;
+  if (loading) return <p className="text-gray-500 text-center py-10">Loading products...</p>;
+  if (error) return <p className="text-red-500 text-center py-10">Error loading products.</p>;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm">
@@ -87,15 +96,14 @@ const ProductTable = () => {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button onClick={() => handleOpenModal(product)} className="text-blue-600 hover:text-blue-800 mr-4"><FiEdit size={18} /></button>
-                  <button onClick={() => handleDelete(product.id)} className="text-red-600 hover:text-red-800"><FiTrash2 size={18} /></button>
+                  <button onClick={() => onEdit(product)} className="text-blue-600 hover:text-blue-800 mr-4"><FiEdit size={18} /></button>
+                  <button onClick={() => handleDelete(product)} className="text-red-600 hover:text-red-800"><FiTrash2 size={18} /></button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      {isModalOpen && <ProductFormModal product={selectedProduct} onClose={handleCloseModal} />}
     </div>
   );
 };

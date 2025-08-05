@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../context/AuthContext';
-import { FaTachometerAlt, FaBoxOpen, FaUsers, FaCog, FaTags, FaSignOutAlt, FaBars, FaTimes } from 'react-icons/fa';
+import { FaTachometerAlt, FaBoxOpen, FaUsers, FaCog, FaTags, FaSignOutAlt, FaBars, FaTimes, FaStore } from 'react-icons/fa'; // Added FaStore
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 
@@ -20,6 +20,7 @@ const AdminLayout = ({ children }) => {
   const adminNavLinks = [
     { name: 'Dashboard', icon: <FaTachometerAlt />, href: '/admin/dashboard' },
     { name: 'Products', icon: <FaBoxOpen />, href: '/admin/products' },
+    { name: 'Stores', icon: <FaStore />, href: '/admin/stores' }, // Added Stores link
     { name: 'Categories', icon: <FaTags />, href: '/admin/categories' },
     { name: 'Users', icon: <FaUsers />, href: '/admin/users' },
     { name: 'Settings', icon: <FaCog />, href: '/admin/settings' },

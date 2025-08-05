@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
       return;
     }
 
-    const idTokenResult = await firebaseUser.getIdTokenResult();
+    const idTokenResult = await firebaseUser.getIdTokenResult(true);
     const userRef = doc(db, 'users', firebaseUser.uid);
     const docSnap = await getDoc(userRef);
 

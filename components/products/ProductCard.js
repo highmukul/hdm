@@ -43,7 +43,7 @@ const ProductCard = ({ product }) => {
         <a className="block text-left flex-grow">
           <div className="relative w-full h-36 md:h-40">
             <Image
-              src={product.images?.[0] || '/placeholder.png'}
+              src={product.imageUrls?.[0] || '/placeholder.png'}
               alt={product.name}
               layout="fill"
               objectFit="cover"

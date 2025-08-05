@@ -2,7 +2,9 @@ import { useProducts } from '../../hooks/useProducts';
 import ProductCard from '../products/ProductCard';
 
 const ProductShowcase = () => {
-  const { products, loading, error } = useProducts({ limit: 8 }); // Fetch 8 products for the showcase
+  // CORRECTED: The first argument is the storeId (null for all stores), 
+  // and the second is the options object.
+  const { products, loading, error } = useProducts(null, { limit: 8 });
 
   return (
     <section className="bg-gray-100 py-20">
