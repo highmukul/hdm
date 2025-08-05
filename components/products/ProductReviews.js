@@ -3,14 +3,14 @@ import { db } from '../../firebase/config';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { FiStar } from 'react-icons/fi';
 
-export const ProductReviews = ({ productId }) => {
+export const ProductReviews = ({ storeId, productId }) => {
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!productId) return;
+        if (!storeId || !productId) return;
         const q = query(
-            collection(db, 'products', productId, 'reviews'),
+            collection(db, 'stores', storeId, 'products', productId, 'reviews'),
             orderBy('createdAt', 'desc')
         );
         const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -18,7 +18,7 @@ export const ProductReviews = ({ productId }) => {
             setLoading(false);
         });
         return () => unsubscribe();
-    }, [productId]);
+    }, [storeId, productId]);
 
     const averageRating = reviews.length > 0
         ? (reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length).toFixed(1)
@@ -61,3 +61,5 @@ export const ProductReviews = ({ productId }) => {
         </div>
     );
 };
+
+export default ProductReviews;

@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { useCart } from '../../context/CartContext';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
-import { FiPlus } from 'react-icons/fi';
+import { FiPlus, FiAlertCircle } from 'react-icons/fi';
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
@@ -19,30 +19,51 @@ const ProductCard = ({ product }) => {
     }
   };
 
+  const getDiscountedPrice = () => {
+    const rule = product.discountRules?.[0];
+    if (!rule) return product.price;
+
+    if (rule.type === 'flat') {
+      return product.price - rule.value;
+    } else if (rule.type === 'percent') {
+      return product.price * (1 - rule.value / 100);
+    }
+    return product.price;
+  };
+
+  const discountedPrice = getDiscountedPrice();
+  const platformFee = product.price * (product.platformFeePercent / 100);
+
   return (
     <motion.div
       whileHover={{ y: -5 }}
       className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full group border border-transparent hover:border-green-500 transition-colors"
     >
-      <Link href={`/products/${product.id}`} passHref>
+      <Link href={`/stores/${product.storeId}/products/${product.id}`} passHref>
         <a className="block text-left flex-grow">
-          {/* Image Container */}
           <div className="relative w-full h-36 md:h-40">
             <Image
-              src={product.imageUrls?.[0] || '/placeholder.png'}
+              src={product.images?.[0] || '/placeholder.png'}
               alt={product.name}
               layout="fill"
               objectFit="cover"
               className="transition-transform duration-300 group-hover:scale-105"
             />
+            {product.stock < 5 && product.stock > 0 && (
+                <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center">
+                    <FiAlertCircle className="mr-1" /> Only {product.stock} left!
+                </div>
+            )}
           </div>
-          {/* Content */}
           <div className="p-4 flex flex-col flex-grow">
             <h3 className="font-semibold text-base text-gray-800 truncate mb-1">{product.name}</h3>
-            <p className="text-sm text-gray-500 mb-2">{product.unit || '1 unit'}</p>
             <div className="flex-grow" />
             <div className="flex justify-between items-center mt-2">
-              <p className="font-bold text-gray-800 text-lg">₹{product.price.toFixed(2)}</p>
+                <div>
+                    <p className="font-bold text-gray-800 text-lg">₹{discountedPrice.toFixed(2)}</p>
+                    {discountedPrice < product.mrp && <p className="text-sm text-gray-500 line-through">₹{product.mrp.toFixed(2)}</p>}
+                    <p className="text-xs text-gray-400" title={`Platform Fee: ₹${platformFee.toFixed(2)}`}>+ platform fee</p>
+                </div>
               <button
                 onClick={handleAddToCart}
                 disabled={product.stock === 0}

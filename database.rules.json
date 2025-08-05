@@ -1,0 +1,24 @@
+{
+  "rules": {
+    "users/{userId}": {
+      ".read": "auth != null && auth.uid == userId",
+      ".write": "auth != null && auth.uid == userId"
+    },
+    "stores/{storeId}": {
+      ".read": "auth != null",
+      ".write": "auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'"
+    },
+    "stores/{storeId}/products/{productId}": {
+      ".read": "auth != null",
+      ".write": "auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'"
+    },
+    "orders/{orderId}": {
+      ".read": "auth != null && (request.auth.uid == resource.data.customerId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' || request.auth.uid == resource.data.captainId)",
+      ".write": "auth != null && (request.auth.uid == resource.data.customerId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' || request.auth.uid == resource.data.captainId)"
+    },
+    "captains/{captainId}": {
+      ".read": "auth != null",
+      ".write": "auth != null && auth.uid == captainId"
+    }
+  }
+}
