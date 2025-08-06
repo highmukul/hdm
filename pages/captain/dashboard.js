@@ -1,12 +1,25 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import CaptainLayout from '../../components/captain/CaptainLayout';
 import OrderMap from '../../components/captain/OrderMap';
 import OrderQueue from '../../components/captain/OrderQueue';
 import withCaptainProfile from '../../components/hoc/withCaptainProfile';
 import { FiMap, FiList } from 'react-icons/fi';
 
-const CaptainDashboardPage = () => {
+const CaptainDashboardPage = ({ captain }) => {
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState('map');
+
+    useEffect(() => {
+        if (captain?.verificationStatus === 'pending') {
+            router.push('/captain/pending');
+        }
+    }, [captain, router]);
+
+    // Render nothing or a loading state while redirecting
+    if (captain?.verificationStatus === 'pending') {
+        return null; 
+    }
 
     return (
         <CaptainLayout>

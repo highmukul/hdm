@@ -82,3 +82,6 @@ exports.expireDiscounts = onSchedule('every 5 minutes', async (event) => {
     await batch.commit();
     logger.info(`expireDiscounts: Processed discounts for ${snapshot.docs.length} products.`);
 });
+
+// Export the new function
+exports.sendVerificationEmail = require('./sendVerificationEmail').sendVerificationEmail;

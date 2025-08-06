@@ -24,7 +24,10 @@ const Header = () => {
             <UserMenu />
             <CartLink cartCount={cartCount} />
           </div>
-          <div className="lg:hidden flex items-center"><button onClick={() => setIsMenuOpen(true)}><FaBars size={24}/></button></div>
+          <div className="lg:hidden flex items-center">
+            <ThemeToggleButton theme={theme} toggleTheme={toggleTheme} />
+            <button onClick={() => setIsMenuOpen(true)} className="ml-2"><FaBars size={24}/></button>
+          </div>
         </div>
       </div>
       <AnimatePresence>
@@ -66,6 +69,7 @@ const ThemeToggleButton = ({ theme, toggleTheme }) => (
 
 const MobileMenu = ({ closeMenu }) => {
     const { user, logout } = useAuth();
+    const { cartCount } = useCart();
     return (
         <motion.div 
             initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
@@ -78,6 +82,7 @@ const MobileMenu = ({ closeMenu }) => {
             </div>
             <div className="flex-grow">
                 <Link href="/shop"><a className="flex items-center p-4 text-lg font-semibold hover:bg-background rounded-lg"><FaBox className="mr-4"/>Shop</a></Link>
+                <Link href="/cart"><a className="flex items-center p-4 text-lg font-semibold hover:bg-background rounded-lg"><FaShoppingCart className="mr-4"/>Cart ({cartCount})</a></Link>
                 {user && <Link href="/profile"><a className="flex items-center p-4 text-lg font-semibold hover:bg-background rounded-lg"><FaUserCircle className="mr-4"/>Profile</a></Link>}
             </div>
             <div className="mt-auto">

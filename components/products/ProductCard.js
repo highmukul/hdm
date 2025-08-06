@@ -39,7 +39,7 @@ const ProductCard = ({ product }) => {
       whileHover={{ y: -5 }}
       className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full group border border-transparent hover:border-green-500 transition-colors"
     >
-      <Link href={`/stores/${product.storeId}/products/${product.id}`} passHref>
+      <Link href={`/products/${product.id}`} passHref>
         <a className="block text-left flex-grow">
           <div className="relative w-full h-36 md:h-40">
             <Image
