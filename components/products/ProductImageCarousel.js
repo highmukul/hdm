@@ -1,19 +1,17 @@
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Lazy } from 'swiper/modules';
+import { Navigation, Pagination } from 'swiper/modules';
 import Image from 'next/image';
 
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import 'swiper/css/lazy';
 
 export const ProductImageCarousel = ({ images }) => {
     return (
         <Swiper
-            modules={[Navigation, Pagination, Lazy]}
+            modules={[Navigation, Pagination]}
             navigation
             pagination={{ clickable: true }}
-            lazy
             className="w-full rounded-lg"
         >
             {images.map((image, index) => (
@@ -24,9 +22,7 @@ export const ProductImageCarousel = ({ images }) => {
                             alt={`Product image ${index + 1}`}
                             layout="fill"
                             objectFit="cover"
-                            className="swiper-lazy"
                         />
-                        <div className="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
                     </div>
                 </SwiperSlide>
             ))}

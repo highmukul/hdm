@@ -64,9 +64,7 @@ const Footer = () => {
               <ul>
                 {section.links.map((link) => (
                   <li key={link.name} className="mb-2">
-                    <Link href={link.href}>
-                      <a className="text-gray-400 hover:text-white transition-colors">{link.name}</a>
-                    </Link>
+                    <Link href={link.href} className="text-gray-400 hover:text-white transition-colors">{link.name}</Link>
                   </li>
                 ))}
               </ul>

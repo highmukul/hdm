@@ -1,5 +1,5 @@
 import { useAvailableOrders } from '../../hooks/useAvailableOrders';
-import OrderCard from './OrderCard';
+import { OrderCard } from './OrderCard';
 import { FiRefreshCw, FiAlertCircle } from 'react-icons/fi';
 
 const OrderQueue = () => {

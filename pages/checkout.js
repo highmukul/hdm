@@ -10,7 +10,6 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
 import { FiMapPin, FiCreditCard, FiCheckCircle } from 'react-icons/fi';
-import withMobileRestriction from '../components/hoc/withMobileRestriction';
 
 const steps = [
     { name: 'Shipping', icon: <FiMapPin /> },
@@ -110,4 +109,4 @@ const CheckoutPage = () => {
     );
 };
 
-export default withMobileRestriction(CheckoutPage);
+export default CheckoutPage;

@@ -1,7 +1,7 @@
 import Layout from '../components/layout/Layout';
 import { HeroCarousel } from '../components/store/HeroCarousel';
 import { SocialCommerceWidget } from '../components/store/SocialCommerceWidget';
-import { ProductGrid } from '../components/store/ProductGrid';
+import ProductGrid from '../components/store/ProductGrid';
 import { CategoryNav } from '../components/store/CategoryNav';
 
 const StorePage = () => {

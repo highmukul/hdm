@@ -8,7 +8,7 @@ import { db } from '../../firebase/config';
 import { doc, updateDoc } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 import { FiNavigation, FiX } from 'react-icons/fi';
-import OrderCard from './OrderCard';
+import { OrderCard } from './OrderCard';
 
 const mapContainerStyle = { width: '100%', height: 'calc(100vh - 200px)', borderRadius: '1.5rem' };
 

@@ -41,7 +41,7 @@ const FeatureSection = () => {
         <section className="bg-gray-50 py-20">
             <div className="container mx-auto px-4">
                 <motion.div 
-                    className="grid md:grid-cols-3 gap-8 text-center"
+                    className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center"
                     variants={containerVariants}
                     initial="hidden"
                     whileInView="visible"

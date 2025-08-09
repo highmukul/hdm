@@ -3,7 +3,7 @@ import { db } from '../../firebase/config';
 import { collection, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
 import { ProductCard } from './ProductCard';
 import { ProductCardSkeleton } from './ProductCardSkeleton';
-import { FilterSidebar } from './FilterSidebar';
+import FilterSidebar from './FilterSidebar';
 
 const ProductGrid = () => {
     const [products, setProducts] = useState([]);

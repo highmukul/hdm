@@ -7,7 +7,6 @@ import ManageAddresses from '../components/profile/ManageAddresses';
 import OrderHistory from '../components/profile/OrderHistory';
 import StaticContent from '../components/profile/StaticContent';
 import ProtectedRoute from '../components/ui/ProtectedRoute';
-import withMobileRestriction from '../components/hoc/withMobileRestriction';
 
 const ProfilePage = () => {
     const { user, logout } = useAuth();
@@ -72,4 +71,4 @@ const ProfilePage = () => {
     );
 };
 
-export default withMobileRestriction(ProfilePage);
+export default ProfilePage;

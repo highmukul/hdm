@@ -4,7 +4,6 @@ import CartSummary from '../components/cart/CartSummary';
 import { useCart } from '../context/CartContext';
 import Link from 'next/link';
 import { FiShoppingCart, FiArrowLeft } from 'react-icons/fi';
-import withMobileRestriction from '../components/hoc/withMobileRestriction';
 
 const CartPage = () => {
   const { cartItems } = useCart();
@@ -43,4 +42,4 @@ const CartPage = () => {
   );
 };
 
-export default withMobileRestriction(CartPage);
+export default CartPage;

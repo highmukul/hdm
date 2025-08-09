@@ -101,7 +101,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => { 
     await signOut(auth);
     setUser(null);
-    router.push('/login'); 
+    router.push('/'); 
   };
 
   const value = { user, loading, signup, login, signInWithGoogle, logout };
@@ -109,7 +109,7 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={value}>
       {!loading && children}
-    </AuthContext.Provider>
+    </Auth.Provider>
   );
 };
 

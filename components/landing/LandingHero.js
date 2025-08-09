@@ -21,7 +21,7 @@ const LandingHero = () => {
   }, []);
 
   return (
-    <section className="relative bg-white text-gray-800 py-20 md:py-28">
+    <section className="relative bg-white text-gray-800 py-20 md:py-28 min-h-[60vh] flex items-center">
       <div className="container mx-auto px-4 grid md:grid-cols-12 gap-8 items-center">
         {/* Text, Search, and Animation */}
         <div className="md:col-span-7">
@@ -38,13 +38,13 @@ const LandingHero = () => {
                   initial={{ opacity: 0, y: 20, position: 'absolute' }}
                   animate={{ opacity: index === currentTextIndex ? 1 : 0, y: index === currentTextIndex ? 0 : -20 }}
                   transition={{ duration: 0.5, ease: "easeInOut" }}
-                  className="text-4xl md:text-5xl font-bold leading-tight"
+                  className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight"
                 >
                   {text}
                 </motion.h1>
               ))}
             </div>
-            <p className="text-lg text-gray-500 mb-8">
+            <p className="text-base sm:text-lg text-gray-500 mb-8">
               Your one-stop shop for fresh groceries, daily essentials, and more.
             </p>
           </motion.div>
@@ -59,10 +59,10 @@ const LandingHero = () => {
             <input
               type="text"
               placeholder="Search for products..."
-              className="w-full py-4 pl-6 pr-24 rounded-full border border-gray-200 focus:ring-2 focus:ring-green-400 focus:outline-none shadow-sm"
+              className="w-full py-3 sm:py-4 pl-4 sm:pl-6 pr-20 sm:pr-24 rounded-full border border-gray-200 focus:ring-2 focus:ring-green-400 focus:outline-none shadow-sm"
             />
             <Link href="/shop" passHref>
-              <a className="absolute right-2 top-1/2 -translate-y-1/2 bg-green-500 text-white font-semibold py-2.5 px-6 rounded-full hover:bg-green-600 transition-colors">
+              <a className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 bg-green-500 text-white font-semibold py-2 sm:py-2.5 px-4 sm:px-6 rounded-full hover:bg-green-600 transition-colors text-sm sm:text-base">
                 Search
               </a>
             </Link>
