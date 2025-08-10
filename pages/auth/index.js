@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AuthForm } from '../../components/auth/AuthForm';
+import AuthForm from '../../components/auth/AuthForm';
 
 const AuthPage = () => {
     const [role, setRole] = useState('customer'); // 'customer' or 'captain'

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import ProductTable from '../../components/admin/ProductTable';
-import ProductFormModal from '../../components/admin/ProductFormModal';
+import AdminProductForm from '../../components/admin/AdminProductForm.jsx';
 import { FiPlus } from 'react-icons/fi';
 
 const ProductsPage = () => {
@@ -33,7 +33,7 @@ const ProductsPage = () => {
         </div>
         <ProductTable onEdit={handleOpenModal} />
       </div>
-      {isModalOpen && <ProductFormModal product={selectedProduct} onClose={handleCloseModal} />}
+      {isModalOpen && <AdminProductForm product={selectedProduct} onSave={handleCloseModal} onCancel={handleCloseModal} />}
     </AdminLayout>
   );
 };

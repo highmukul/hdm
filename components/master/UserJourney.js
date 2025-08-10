@@ -8,22 +8,11 @@ import { FilterSidebar, ProductCard, ProductSkeleton, OrderHistoryItem, Spinner 
 
 import { useProducts } from '../../hooks/useProducts';
 import { fetchUserOrders } from '../../api/orders';
+import AuthForm from '../auth/AuthForm';
 
 const viewVariants = {
   enter: { opacity: 1, x: 0, transition: { duration: 0.3, ease: 'easeInOut' } },
   exit: (direction) => ({ opacity: 0, x: direction * 200, transition: { duration: 0.3, ease: 'easeInOut' } }),
-};
-
-// --- Sub-component for the Login View ---
-const LoginView = ({ setView }) => {
-    const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [error, setError] = useState(null); const [loading, setLoading] = useState(false); const { login, signInWithGoogle } = useAuth();
-    const handleLogin = async (e) => { e.preventDefault(); setLoading(true); setError(null); try { await login(email, password); } catch (error) { setError(error.message.replace('Firebase: ', '')); setLoading(false); } };
-    return (<div className="flex items-center justify-center min-h-full bg-gray-50 px-4"><div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg"><h2 className="text-3xl font-extrabold text-center text-gray-900">Welcome Back</h2><button onClick={signInWithGoogle} className="w-full flex items-center justify-center py-3 px-4 text-sm font-medium rounded-md border hover:bg-gray-50"><FaGoogle className="w-5 h-5 mr-2" /> Continue with Google</button><div className="text-center text-sm text-gray-500">OR</div><form className="space-y-6" onSubmit={handleLogin}><input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="Email" required className="w-full px-4 py-2 border rounded-md"/><input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="Password" required className="w-full px-4 py-2 border rounded-md"/>{error && <p className="text-red-500 text-sm text-center">{error}</p>}<button type="submit" disabled={loading} className="w-full py-3 px-4 font-medium text-white bg-primary rounded-md hover:bg-primary-dark disabled:bg-indigo-300">{loading ? 'Logging in...' : 'Log In'}</button></form><p className="text-sm text-center text-gray-600">Not have an account?{' '}<button onClick={() => setView('SIGNUP')} className="font-medium text-primary hover:text-primary-dark">Sign up</button></p></div></div>);
-};
-
-// --- Sub-component for the Signup View ---
-const SignUpView = ({ setView }) => {
-    return (<div className="flex items-center justify-center min-h-full bg-gray-50 px-4"><div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg"><h2 className="text-3xl font-extrabold text-center text-gray-900">Create an Account</h2>{/* Signup form here */}<p className="mt-4 text-sm text-center text-gray-600">Already have an account?{' '}<button onClick={() => setView('LOGIN')} className="font-medium text-primary hover:text-primary-dark">Log in</button></p></div></div>)
 };
 
 // --- Sub-component for the Main Product Home View ---
@@ -42,11 +31,41 @@ const ProfileView = ({ setView }) => {
 
 // --- The Master Component ---
 const UserJourney = ({ initialView = 'HOME' }) => {
-  const { user, loading: authLoading } = useAuth(); const { products, loading: productsLoading } = useProducts(); const [currentView, setCurrentView] = useState(initialView); const [direction, setDirection] = useState(1);
+  const { user, login, signup, signInWithGoogle, loading: authLoading } = useAuth(); const { products, loading: productsLoading } = useProducts(); const [currentView, setCurrentView] = useState(initialView); const [direction, setDirection] = useState(1);
+  const [error, setError] = useState(null);
+
   useEffect(() => { if (!authLoading) { if (user && (currentView === 'LOGIN' || currentView === 'SIGNUP')) { handleSetView('HOME'); } if (!user && (currentView !== 'LOGIN' && currentView !== 'SIGNUP')) { handleSetView('LOGIN'); } } }, [user, authLoading]);
   const handleSetView = (newView) => { const order = ['LOGIN', 'SIGNUP', 'HOME', 'PROFILE']; setDirection(order.indexOf(newView) > order.indexOf(currentView) ? 1 : -1); setCurrentView(newView); };
+  
+  const handleLogin = async (email, password) => {
+    setError(null);
+    try {
+      await login(email, password);
+    } catch (error) {
+      setError(error.message.replace('Firebase: ', ''));
+    }
+  };
+
+  const handleSignup = async (email, password) => {
+    setError(null);
+    try {
+      await signup(email, password);
+    } catch (error) {
+      setError(error.message.replace('Firebase: ', ''));
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setError(null);
+    try {
+      await signInWithGoogle();
+    } catch (error) {
+      setError(error.message.replace('Firebase: ', ''));
+    }
+  };
+
   if (authLoading) return <div className="h-screen w-screen flex items-center justify-center"><Spinner/></div>
-  return (<div className="min-h-screen"><AnimatePresence exitBeforeEnter custom={direction}><motion.div key={currentView} custom={direction} variants={viewVariants} initial="exit" animate="enter" exit="exit" className="h-full">{currentView === 'LOGIN' && <LoginView setView={handleSetView} />}{currentView === 'SIGNUP' && <SignUpView setView={handleSetView} />}{currentView === 'HOME' && user && <HomeView products={products} loading={productsLoading} />}{currentView === 'PROFILE' && user && <ProfileView setView={handleSetView} />}</motion.div></AnimatePresence></div>);
+  return (<div className="min-h-screen"><AnimatePresence exitBeforeEnter custom={direction}><motion.div key={currentView} custom={direction} variants={viewVariants} initial="exit" animate="enter" exit="exit" className="h-full">{(currentView === 'LOGIN' || currentView === 'SIGNUP') && <AuthForm view={currentView} setView={handleSetView} onLogin={handleLogin} onSignup={handleSignup} onGoogleSignIn={handleGoogleSignIn} loading={authLoading} error={error} />}{currentView === 'HOME' && user && <HomeView products={products} loading={productsLoading} />}{currentView === 'PROFILE' && user && <ProfileView setView={handleSetView} />}</motion.div></AnimatePresence></div>);
 };
 
 export default UserJourney;

@@ -1,12 +1,11 @@
 import { useState, useRef } from 'react';
 import { useUserAddresses } from '../../hooks/useUserAddresses';
 import { useAuth } from '../../context/AuthContext';
-import { db } from '../../firebase/config';
-import { doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { FiPlus, FiTrash2, FiMapPin } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { useGoogleMaps } from '../../hooks/useGoogleMaps';
 import { Autocomplete } from '@react-google-maps/api';
+import EmptyState from '../common/EmptyState';
 
 const ManageAddresses = () => {
     const { user } = useAuth();
@@ -37,25 +36,37 @@ const ManageAddresses = () => {
         setIsAdding(false);
     };
 
-    if (loading || !isLoaded) return <p>Loading addresses...</p>;
+    if (loading || !isLoaded) return <div className="text-center py-16"><div className="loader"></div></div>;
 
     return (
         <div>
             <h2 className="text-2xl font-bold mb-6 text-gray-800">My Addresses</h2>
             
-            <div className="space-y-4">
-                {addresses.map(address => (
-                    <div key={address.id} className="p-4 border border-gray-200 rounded-lg flex justify-between items-center bg-gray-50">
-                        <div className="flex items-center">
-                            <FiMapPin className="text-gray-500 mr-4" />
-                            <p className="text-sm text-gray-700">{address.fullAddress}</p>
+            {addresses.length > 0 ? (
+                <div className="space-y-4">
+                    {addresses.map(address => (
+                        <div key={address.id} className="p-4 border border-gray-200 rounded-lg flex justify-between items-center bg-gray-50">
+                            <div className="flex items-center">
+                                <FiMapPin className="text-gray-500 mr-4" />
+                                <p className="text-sm text-gray-700">{address.fullAddress}</p>
+                            </div>
+                            <button onClick={() => removeAddress(address.id)} className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-100">
+                                <FiTrash2 />
+                            </button>
                         </div>
-                        <button onClick={() => removeAddress(address.id)} className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-100">
-                            <FiTrash2 />
-                        </button>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            ) : (
+                !isAdding && (
+                    <EmptyState
+                        icon={<FiMapPin />}
+                        title="No addresses found"
+                        message="You haven't added any addresses yet. Add one to make checkout faster."
+                        actionText="Add New Address"
+                        onActionClick={() => setIsAdding(true)}
+                    />
+                )
+            )}
 
             <div className="mt-8">
                 {isAdding ? (
@@ -75,9 +86,11 @@ const ManageAddresses = () => {
                         <button onClick={() => setIsAdding(false)} className="mt-3 text-sm text-gray-600">Cancel</button>
                     </div>
                 ) : (
-                    <button onClick={() => setIsAdding(true)} className="w-full flex items-center justify-center py-3 px-4 font-medium rounded-lg border-2 border-dashed border-gray-300 hover:bg-gray-50 text-gray-600">
-                        <FiPlus className="mr-2" /> Add New Address
-                    </button>
+                    addresses.length > 0 && (
+                        <button onClick={() => setIsAdding(true)} className="w-full flex items-center justify-center py-3 px-4 font-medium rounded-lg border-2 border-dashed border-gray-300 hover:bg-gray-50 text-gray-600">
+                            <FiPlus className="mr-2" /> Add New Address
+                        </button>
+                    )
                 )}
             </div>
         </div>

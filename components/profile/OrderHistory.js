@@ -3,12 +3,15 @@ import { useAuth } from '../../context/AuthContext';
 import { db } from '../../firebase/config';
 import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 import Image from 'next/image';
-import { FiArchive, FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { FiArchive, FiChevronDown, FiChevronUp, FiShoppingBag } from 'react-icons/fi';
+import EmptyState from '../common/EmptyState';
+import { useRouter } from 'next/router';
 
 const OrderHistory = () => {
     const { user } = useAuth();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const router = useRouter();
 
     useEffect(() => {
         if (!user) {
@@ -34,7 +37,7 @@ const OrderHistory = () => {
         return () => unsubscribe();
     }, [user]);
 
-    if (loading) return <p className="text-gray-500">Loading order history...</p>;
+    if (loading) return <div className="text-center py-16"><div className="loader"></div></div>;
 
     return (
         <div>
@@ -46,11 +49,13 @@ const OrderHistory = () => {
                     ))}
                 </div>
             ) : (
-                <div className="text-center py-16 bg-gray-50 rounded-lg">
-                    <FiArchive className="mx-auto text-5xl text-gray-400 mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-700">No Orders Yet</h3>
-                    <p className="text-gray-500 mt-1">Your past orders will appear here.</p>
-                </div>
+                <EmptyState
+                    icon={<FiShoppingBag />}
+                    title="You haven't placed any orders yet."
+                    message="When you place an order, it will appear here. Let's get you started!"
+                    actionText="Start Shopping"
+                    onActionClick={() => router.push('/')}
+                />
             )}
         </div>
     );
