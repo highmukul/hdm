@@ -1,42 +1,29 @@
-import { motion } from 'framer-motion';
-import { FaLeaf, FaShippingFast, FaSmile } from 'react-icons/fa';
+import * as FaIcons from 'react-icons/fa';
 
 const features = [
-  { icon: <FaLeaf className="w-10 h-10 mx-auto text-primary" />, title: "Fresh & Quality", desc: "We source the freshest products from trusted local partners." },
-  { icon: <FaShippingFast className="w-10 h-10 mx-auto text-primary" />, title: "Speedy Delivery", desc: "Get your order in as fast as one hour, tracked in real-time." },
-  { icon: <FaSmile className="w-10 h-10 mx-auto text-primary" />, title: "Happy Customers", desc: "Dedicated support and satisfaction guaranteed for every order." },
+    { name: 'Fresh Produce', description: 'Direct from local farms to your table.', icon: <FaIcons.FaLeaf /> },
+    { name: 'Fast Delivery', description: 'Get your order in minutes, not hours.', icon: <FaIcons.FaShippingFast /> },
+    { name: 'Happy Customers', description: 'Join thousands of satisfied shoppers.', icon: <FaIcons.FaSmile /> },
 ];
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.2 } },
-};
-
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { duration: 0.5 } },
-};
-
 const Features = () => {
-  return (
-    <section className="container mx-auto px-6 py-20">
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.5 }}
-        className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center"
-      >
-        {features.map((feature, index) => (
-          <motion.div key={index} variants={itemVariants} className="p-6">
-            {feature.icon}
-            <h3 className="text-xl font-bold mt-4 mb-2">{feature.title}</h3>
-            <p className="text-gray-600">{feature.desc}</p>
-          </motion.div>
-        ))}
-      </motion.div>
-    </section>
-  );
+    return (
+        <div className="bg-gray-50 py-12">
+            <div className="container mx-auto px-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                    {features.map(feature => (
+                        <div key={feature.name} className="p-6">
+                            <div className="flex items-center justify-center h-16 w-16 mx-auto bg-blue-100 text-blue-600 rounded-full text-3xl">
+                                {feature.icon}
+                            </div>
+                            <h3 className="mt-5 text-xl font-bold">{feature.name}</h3>
+                            <p className="mt-2 text-gray-600">{feature.description}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
 };
 
 export default Features;

@@ -1,11 +1,12 @@
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
 import Layout from '../../components/layout/Layout';
 import { GoogleMap, Marker, DirectionsRenderer } from '@react-google-maps/api';
 import { useGoogleMaps } from '../../hooks/useGoogleMaps';
+import { useCaptainLocation } from '../../hooks/useCaptainLocation';
 import { db } from '../../firebase/config';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { FaClock } from 'react-icons/fa';
+import * as FaIcons from 'react-icons/fa';
 
 const containerStyle = { width: '100%', height: '60vh' };
 
@@ -14,7 +15,7 @@ const TrackOrderPage = () => {
     const { orderId } = router.query;
     const { isLoaded, loadError } = useGoogleMaps();
     const [order, setOrder] = useState(null);
-    const [captainLocation, setCaptainLocation] = useState(null);
+    const { captainLocation } = useCaptainLocation(order?.captainId);
     const [directions, setDirections] = useState(null);
     const [eta, setEta] = useState('');
 
@@ -25,13 +26,6 @@ const TrackOrderPage = () => {
             if (doc.exists()) {
                 const orderData = { id: doc.id, ...doc.data() };
                 setOrder(orderData);
-                if (orderData.captainId) {
-                    const captainRef = doc(db, 'captains', orderData.captainId);
-                    const unsubCaptain = onSnapshot(captainRef, (capDoc) => {
-                        if (capDoc.exists()) setCaptainLocation(capDoc.data().location);
-                    });
-                    return () => unsubCaptain();
-                }
             }
         });
         return () => unsubOrder();
@@ -64,7 +58,7 @@ const TrackOrderPage = () => {
                         <h1 className="text-2xl font-bold text-text-primary">Your order is on its way!</h1>
                         <p className="text-text-secondary">Order ID: <span className="font-mono">{orderId}</span></p>
                         <div className="flex items-center text-xl font-bold text-primary mt-4">
-                            <FaClock className="mr-3" />
+                            <FaIcons.FaClock className="mr-3" />
                             <span>Estimated Arrival: {eta || 'Calculating...'}</span>
                         </div>
                     </div>

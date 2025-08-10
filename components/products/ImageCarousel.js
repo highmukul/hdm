@@ -1,44 +1,36 @@
-import { useState } from 'react';
-import Image from 'next/image';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
-import { motion, AnimatePresence } from 'framer-motion';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import SwiperCore, { Pagination, Navigation, Autoplay } from 'swiper';
+import * as FaIcons from 'react-icons/fa';
 
-const ImageCarousel = ({ imageUrls }) => {
-    const [index, setIndex] = useState(0);
+SwiperCore.use([Pagination, Navigation, Autoplay]);
 
-    const nextImage = () => setIndex(i => (i + 1) % imageUrls.length);
-    const prevImage = () => setIndex(i => (i - 1 + imageUrls.length) % imageUrls.length);
-
+export const ProductImageCarousel = ({ images }) => {
     return (
-        <div className="relative w-full h-96 flex items-center justify-center bg-gray-100 rounded-lg overflow-hidden">
-            <AnimatePresence initial={false}>
-                <motion.div
-                    key={index}
-                    initial={{ x: 300, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: -300, opacity: 0 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                    className="absolute w-full h-full"
-                >
-                    <Image
-                        src={imageUrls[index]}
-                        alt="Product Image"
-                        layout="fill"
-                        objectFit="contain"
-                    />
-                </motion.div>
-            </AnimatePresence>
-            
-            <button onClick={prevImage} className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/50 p-2 rounded-full hover:bg-white transition-colors z-10"><FaChevronLeft /></button>
-            <button onClick={nextImage} className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/50 p-2 rounded-full hover:bg-white transition-colors z-10"><FaChevronRight /></button>
-
-            <div className="absolute bottom-4 flex space-x-2 z-10">
-                {imageUrls.map((_, i) => (
-                    <div key={i} onClick={() => setIndex(i)} className={`w-3 h-3 rounded-full cursor-pointer transition-colors ${i === index ? 'bg-indigo-600' : 'bg-gray-400'}`} />
+        <div className="relative">
+            <Swiper
+                pagination={{ type: 'fraction' }}
+                navigation={{
+                    nextEl: '.swiper-button-next-custom',
+                    prevEl: '.swiper-button-prev-custom',
+                }}
+                loop={true}
+                autoplay={{ delay: 3000, disableOnInteraction: false }}
+            >
+                {images.map((img, index) => (
+                    <SwiperSlide key={index}>
+                        <img src={img} alt={`Product image ${index + 1}`} className="w-full h-96 object-cover rounded-lg" />
+                    </SwiperSlide>
                 ))}
+            </Swiper>
+            <div className="swiper-button-prev-custom absolute top-1/2 left-2 transform -translate-y-1/2 z-10 p-2 bg-white bg-opacity-50 rounded-full cursor-pointer hover:bg-opacity-75">
+                <FaIcons.FaChevronLeft />
+            </div>
+            <div className="swiper-button-next-custom absolute top-1/2 right-2 transform -translate-y-1/2 z-10 p-2 bg-white bg-opacity-50 rounded-full cursor-pointer hover:bg-opacity-75">
+                <FaIcons.FaChevronRight />
             </div>
         </div>
     );
 };
-
-export default ImageCarousel;

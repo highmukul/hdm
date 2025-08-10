@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { db } from '../../firebase/config';
 import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
-import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
+import * as FaIcons from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
 const CategoriesPage = () => {
@@ -68,7 +68,7 @@ const CategoriesPage = () => {
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-2xl font-bold text-gray-800">Manage Categories</h1>
                 <button onClick={openModalForAdd} className="btn-primary flex items-center">
-                    <FaPlus className="mr-2" /> Add Category
+                    <FaIcons.FaPlus className="mr-2" /> Add Category
                 </button>
             </div>
 
@@ -86,8 +86,8 @@ const CategoriesPage = () => {
                                 <tr key={category.id} className="hover:bg-gray-50">
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{category.name}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button onClick={() => openModalForEdit(category)} className="text-blue-600 hover:text-blue-800 mr-4"><FaEdit size={18} /></button>
-                                        <button onClick={() => handleDeleteCategory(category.id)} className="text-red-600 hover:text-red-800"><FaTrash size={18} /></button>
+                                        <button onClick={() => openModalForEdit(category)} className="text-blue-600 hover:text-blue-800 mr-4"><FaIcons.FaEdit size={18} /></button>
+                                        <button onClick={() => handleDeleteCategory(category.id)} className="text-red-600 hover:text-red-800"><FaIcons.FaTrash size={18} /></button>
                                     </td>
                                 </tr>
                             ))}

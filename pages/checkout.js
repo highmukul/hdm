@@ -9,12 +9,12 @@ import { db } from '../firebase/config';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
-import { FiMapPin, FiCreditCard, FiCheckCircle } from 'react-icons/fi';
+import * as FiIcons from 'react-icons/fi';
 
 const steps = [
-    { name: 'Shipping', icon: <FiMapPin /> },
-    { name: 'Payment', icon: <FiCreditCard /> },
-    { name: 'Confirmation', icon: <FiCheckCircle /> },
+    { name: 'Shipping', icon: <FiIcons.FiMapPin /> },
+    { name: 'Payment', icon: <FiIcons.FiCreditCard /> },
+    { name: 'Confirmation', icon: <FiIcons.FiCheckCircle /> },
 ];
 
 const CheckoutPage = () => {

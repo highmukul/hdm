@@ -1,3 +1,63 @@
-body {
-  background-color: red !important;
+@import url('https://rsms.me/inter/inter.css');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 
+  ================================================================================
+  DESIGN SYSTEM & THEME DEFINITION
+  This is the single source of truth for the application's visual identity.
+  ================================================================================
+*/
+@layer base {
+  :root {
+    /* Light Theme Palette */
+    --primary-color: #4f46e5;
+    --primary-color-hover: #4338ca;
+    --background-color: #f9fafb; /* Off-white for a softer look */
+    --card-background: #ffffff;
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --border-color: #e5e7eb;
+  }
+
+  .dark {
+    /* Dark Theme Palette */
+    --primary-color: #6366f1;
+    --primary-color-hover: #818cf8;
+    --background-color: #111827; /* Near-black for deep contrast */
+    --card-background: #1f2937;
+    --text-primary: #f9fafb;
+    --text-secondary: #9ca3af;
+    --border-color: #374151;
+  }
+
+  /* Base styles applied to the whole app */
+  body {
+    font-family: 'Inter', sans-serif;
+    @apply bg-background text-text-primary transition-colors duration-300;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* 
+  ================================================================================
+  CUSTOM COMPONENT STYLES
+  These are reusable component classes that use the theme variables defined above.
+  ================================================================================
+*/
+@layer components {
+  .btn-primary {
+    @apply py-2.5 px-5 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-background transition-all transform hover:scale-105;
+  }
+
+  .card {
+    @apply bg-card-background rounded-xl shadow-lg border border-border-color;
+  }
+
+  .input-field {
+    @apply mt-1 block w-full rounded-md border-border-color bg-background shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 text-text-primary;
+  }
 }

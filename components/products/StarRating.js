@@ -1,21 +1,15 @@
-import { FaStar, FaStarHalfAlt, FaRegStar } from 'react-icons/fa';
+import * as FaIcons from 'react-icons/fa';
 
-const StarRating = ({ rating, reviewCount }) => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-        if (i <= rating) {
-            stars.push(<FaStar key={i} className="text-yellow-400" />);
-        } else if (i === Math.ceil(rating) && !Number.isInteger(rating)) {
-            stars.push(<FaStarHalfAlt key={i} className="text-yellow-400" />);
-        } else {
-            stars.push(<FaRegStar key={i} className="text-yellow-400" />);
-        }
-    }
+const StarRating = ({ rating }) => {
+    const fullStars = Math.floor(rating);
+    const halfStar = rating % 1 !== 0;
+    const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
 
     return (
         <div className="flex items-center">
-            {stars}
-            {reviewCount && <span className="text-xs text-gray-500 ml-2">({reviewCount} reviews)</span>}
+            {[...Array(fullStars)].map((_, i) => <FaIcons.FaStar key={`full-${i}`} className="text-yellow-400" />)}
+            {halfStar && <FaIcons.FaStarHalfAlt className="text-yellow-400" />}
+            {[...Array(emptyStars)].map((_, i) => <FaIcons.FaRegStar key={`empty-${i}`} className="text-gray-300" />)}
         </div>
     );
 };

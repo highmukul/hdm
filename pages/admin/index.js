@@ -3,7 +3,7 @@ import AdminLayout from '../../components/admin/AdminLayout';
 import AdminProductForm from '../../components/admin/AdminProductForm';
 import { db } from '../../firebase/config';
 import { collection, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
-import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
+import * as FaIcons from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 
@@ -57,7 +57,7 @@ const AdminPage = () => {
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-2xl font-bold">Product Management</h1>
                 <button onClick={() => { setSelectedProduct(null); setIsFormOpen(true); }} className="bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center">
-                    <FaPlus className="mr-2" /> Add Product
+                    <FaIcons.FaPlus className="mr-2" /> Add Product
                 </button>
             </div>
 
@@ -89,8 +89,8 @@ const AdminPage = () => {
                                         <td className="py-2">₹{product.price}</td>
                                         <td className="py-2">{product.stock}</td>
                                         <td className="py-2 text-right">
-                                            <button onClick={() => handleEdit(product)} className="text-blue-600 mr-4"><FaEdit /></button>
-                                            <button onClick={() => handleDelete(product.id)} className="text-red-600"><FaTrash /></button>
+                                            <button onClick={() => handleEdit(product)} className="text-blue-600 mr-4"><FaIcons.FaEdit /></button>
+                                            <button onClick={() => handleDelete(product.id)} className="text-red-600"><FaIcons.FaTrash /></button>
                                         </td>
                                     </tr>
                                 ))

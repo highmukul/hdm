@@ -1,51 +1,81 @@
+import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { FiPlus } from 'react-icons/fi';
-import toast from 'react-hot-toast';
 import { useCart } from '../../context/CartContext';
+import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
+import * as FiIcons from 'react-icons/fi';
 
-export const ProductCard = ({ product }) => {
-    const { addToCart } = useCart();
-    const discount = product.mrp - product.price;
-    const discountPercent = Math.round((discount / product.mrp) * 100);
+const ProductCard = ({ product }) => {
+  const { addToCart } = useCart();
 
-    return (
-        <motion.div
-            whileHover={{ y: -5 }}
-            className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200"
-        >
-            <div className="relative">
-                <Image
-                    src={product.imageUrls?.[0] || '/placeholder.png'}
-                    alt={product.name}
-                    width={500}
-                    height={500}
-                    className="object-cover"
-                />
-                {discount > 0 && (
-                    <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                        {discountPercent}% OFF
-                    </div>
-                )}
-            </div>
-            <div className="p-4">
-                <h3 className="text-base font-medium truncate">{product.name}</h3>
-                <div className="flex justify-between items-center mt-2">
-                    <div>
-                        <p className="text-lg font-bold">₹{product.price.toFixed(2)}</p>
-                        {discount > 0 && <p className="text-sm text-gray-500 line-through">₹{product.mrp.toFixed(2)}</p>}
-                    </div>
-                    <button
-                        onClick={() => {
-                            addToCart(product, 1);
-                            toast.success(`${product.name} added to cart`);
-                        }}
-                        className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700"
-                    >
-                        <FiPlus />
-                    </button>
+  const handleAddToCart = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (product.stock > 0) {
+      addToCart(product, 1);
+      toast.success(`${product.name} added to cart!`);
+    } else {
+      toast.error("Sorry, this item is out of stock.");
+    }
+  };
+
+  const getDiscountedPrice = () => {
+    const rule = product.discountRules?.[0];
+    if (!rule) return product.price;
+
+    if (rule.type === 'flat') {
+      return product.price - rule.value;
+    } else if (rule.type === 'percent') {
+      return product.price * (1 - rule.value / 100);
+    }
+    return product.price;
+  };
+
+  const discountedPrice = getDiscountedPrice();
+  const platformFee = product.price * (product.platformFeePercent / 100);
+
+  return (
+    <motion.div
+      whileHover={{ y: -5 }}
+      className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full group border border-transparent hover:border-green-500 transition-colors"
+    >
+      <Link href={`/products/${product.id}`} className="block text-left flex-grow">
+          <div className="relative w-full h-36 md:h-40">
+            <Image
+              src={product.imageUrls?.[0] || '/placeholder.png'}
+              alt={product.name}
+              layout="fill"
+              objectFit="cover"
+              className="transition-transform duration-300 group-hover:scale-105"
+            />
+            {product.stock < 5 && product.stock > 0 && (
+                <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center">
+                    <FiIcons.FiAlertCircle className="mr-1" /> Only {product.stock} left!
                 </div>
+            )}
+          </div>
+          <div className="p-4 flex flex-col flex-grow">
+            <h3 className="font-semibold text-base text-gray-800 truncate mb-1">{product.name}</h3>
+            <div className="flex-grow" />
+            <div className="flex justify-between items-center mt-2">
+                <div>
+                    <p className="font-bold text-gray-800 text-lg">₹{discountedPrice.toFixed(2)}</p>
+                    {discountedPrice < product.mrp && <p className="text-sm text-gray-500 line-through">₹{product.mrp.toFixed(2)}</p>}
+                    <p className="text-xs text-gray-400" title={`Platform Fee: ₹${platformFee.toFixed(2)}`}>+ platform fee</p>
+                </div>
+              <button
+                onClick={handleAddToCart}
+                disabled={product.stock === 0}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-green-100 text-green-600 hover:bg-green-500 hover:text-white transition-colors disabled:bg-gray-200 disabled:text-gray-400"
+                aria-label="Add to cart"
+              >
+                <FiIcons.FiPlus size={20} />
+              </button>
             </div>
-        </motion.div>
-    );
+          </div>
+      </Link>
+    </motion.div>
+  );
 };
+
+export default ProductCard;

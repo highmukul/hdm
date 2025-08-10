@@ -3,7 +3,7 @@
 
 const admin = require('firebase-admin');
 // IMPORTANT: Replace with the path to your downloaded service account key
-const serviceAccount = require('./hadoti-daily-mart-firebase-adminsdk-fbsvc-5d7083fa6b.json');
+const serviceAccount = require('./hadoti-daily-mart-467808-firebase-adminsdk-fbsvc-b0a2d60c22.json');
 
 const userEmail = process.argv[2];
 

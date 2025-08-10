@@ -32,10 +32,10 @@ const AddressForm = ({ onSelectAddress }) => {
         setIsAddingNew(false);
     };
     
-    const handlePlaceSelected = () => {
+    const handleSaveAddress = () => {
         const place = autocompleteRef.current.getPlace();
-        if (!place.geometry) {
-            toast.error("Please select a valid address.");
+        if (!place || !place.geometry) {
+            toast.error("Please select a valid address from the dropdown.");
             return;
         }
 
@@ -81,11 +81,16 @@ const AddressForm = ({ onSelectAddress }) => {
             {isAddingNew ? (
                 <div className="mt-6 pt-6 border-t border-border">
                     <h3 className="font-semibold mb-2 text-text-primary">Add a New Address</h3>
-                    <Autocomplete onLoad={(ref) => autocompleteRef.current = ref} onPlaceChanged={handlePlaceSelected} options={{ componentRestrictions: { country: 'in' } }}>
+                    <Autocomplete
+                        onLoad={(ref) => (autocompleteRef.current = ref)}
+                        onPlaceChanged={handleSaveAddress}
+                        options={{ componentRestrictions: { country: 'in' } }}
+                    >
                         <input type="text" placeholder="Start typing your address..." className="input-field w-full" />
                     </Autocomplete>
                     <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone Number" className="input-field w-full mt-4" required/>
                     <div className="flex justify-end space-x-4 mt-4">
+                        <button onClick={handleSaveAddress} className="btn-primary">Save Address</button>
                         {addresses.length > 0 && <button type="button" onClick={() => setIsAddingNew(false)} className="py-2 px-4 bg-gray-200 dark:bg-gray-700 text-text-primary rounded-lg hover:opacity-90">Cancel</button>}
                     </div>
                 </div>

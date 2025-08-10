@@ -1,22 +1,57 @@
 import AdminLayout from '../../components/admin/AdminLayout';
 import UserTable from '../../components/admin/UserTable';
-import { FiPlus } from 'react-icons/fi';
+import useAdminData from '../../hooks/useAdminData';
+import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { db } from '../../firebase/config';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
+import UserEditModal from '../../components/admin/UserEditModal';
 
-const UsersPage = () => {
-  return (
-    <AdminLayout>
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-between items-center mb-8">
-            <h1 className="text-2xl font-bold text-gray-800">Manage Users</h1>
-            <button className="flex items-center bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors">
-                <FiPlus className="mr-2" />
-                Add User
-            </button>
-        </div>
-        <UserTable />
-      </div>
-    </AdminLayout>
-  );
+const AdminUsersPage = () => {
+    const { data: users, loading, error } = useAdminData('users');
+    const [editingUser, setEditingUser] = useState(null);
+
+    const handleEdit = (user) => {
+        setEditingUser(user);
+    };
+
+    const handleSave = async (user) => {
+        try {
+            await updateDoc(doc(db, 'users', user.id), { role: user.role });
+            toast.success('User updated!');
+            setEditingUser(null);
+        } catch (error) {
+            toast.error('Error updating user.');
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (window.confirm('Are you sure you want to delete this user?')) {
+            try {
+                await deleteDoc(doc(db, 'users', id));
+                toast.success('User deleted!');
+            } catch (error) {
+                toast.error('Error deleting user.');
+            }
+        }
+    };
+
+    if (loading) return <AdminLayout><div>Loading...</div></AdminLayout>;
+    if (error) return <AdminLayout><div>Error: {error.message}</div></AdminLayout>;
+
+    return (
+        <AdminLayout>
+            <h1 className="text-2xl font-bold mb-4">User Management</h1>
+            <UserTable users={users} onEdit={handleEdit} onDelete={handleDelete} />
+            {editingUser && (
+                <UserEditModal
+                    user={editingUser}
+                    onSave={handleSave}
+                    onCancel={() => setEditingUser(null)}
+                />
+            )}
+        </AdminLayout>
+    );
 };
 
-export default UsersPage;
+export default AdminUsersPage;

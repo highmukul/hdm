@@ -1,28 +1,31 @@
 import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { FiHome, FiShoppingBag, FiUser } from 'react-icons/fi';
+import * as FiIcons from 'react-icons/fi';
 
-export const BottomNav = () => {
-    const router = useRouter();
-
-    const navItems = [
-        { href: '/customer/home', icon: <FiHome />, label: 'Home' },
-        { href: '/customer/orders', icon: <FiShoppingBag />, label: 'Orders' },
-        { href: '/customer/profile', icon: <FiUser />, label: 'Profile' },
-    ];
-
+const BottomNav = () => {
     return (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
-            <div className="flex justify-around max-w-lg mx-auto">
-                {navItems.map(({ href, icon, label }) => (
-                    <Link href={href} key={label}>
-                        <a className={`flex flex-col items-center justify-center p-3 w-full text-sm transition-colors ${router.pathname === href ? 'text-blue-600' : 'text-gray-500 hover:text-blue-600'}`}>
-                            <span className="text-2xl">{icon}</span>
-                            <span>{label}</span>
-                        </a>
-                    </Link>
-                ))}
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-lg z-40">
+            <div className="flex justify-around py-2">
+                <Link href="/" legacyBehavior>
+                    <a className="flex flex-col items-center text-gray-600 hover:text-blue-600">
+                        <FiIcons.FiHome size={24} />
+                        <span className="text-xs">Home</span>
+                    </a>
+                </Link>
+                <Link href="/cart" legacyBehavior>
+                    <a className="flex flex-col items-center text-gray-600 hover:text-blue-600">
+                        <FiIcons.FiShoppingBag size={24} />
+                        <span className="text-xs">Cart</span>
+                    </a>
+                </Link>
+                <Link href="/profile" legacyBehavior>
+                    <a className="flex flex-col items-center text-gray-600 hover:text-blue-600">
+                        <FiIcons.FiUser size={24} />
+                        <span className="text-xs">Profile</span>
+                    </a>
+                </Link>
             </div>
         </div>
     );
 };
+
+export default BottomNav;

@@ -1,98 +1,55 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useUserAddresses } from '../../hooks/useUserAddresses';
-import { useAuth } from '../../context/AuthContext';
-import { FiPlus, FiTrash2, FiMapPin } from 'react-icons/fi';
+import AddressForm from './AddressForm';
+import * as FiIcons from 'react-icons/fi';
 import toast from 'react-hot-toast';
-import { useGoogleMaps } from '../../hooks/useGoogleMaps';
-import { Autocomplete } from '@react-google-maps/api';
-import EmptyState from '../common/EmptyState';
 
 const ManageAddresses = () => {
-    const { user } = useAuth();
-    const { addresses, loading, addAddress, removeAddress } = useUserAddresses(user?.uid);
-    const { isLoaded } = useGoogleMaps();
-    const [isAdding, setIsAdding] = useState(false);
-    const autocompleteRef = useRef(null);
+    const { addresses, addAddress, deleteAddress, loading } = useUserAddresses();
+    const [isFormOpen, setIsFormOpen] = useState(false);
 
-    const handlePlaceSelected = async () => {
-        if (!autocompleteRef.current) return;
-        const place = autocompleteRef.current.getPlace();
-        
-        if (!place.geometry) {
-            toast.error("Invalid address. Please select from the dropdown.");
-            return;
+    const handleAddAddress = async (addressData) => {
+        try {
+            await addAddress(addressData);
+            toast.success("Address added!");
+            setIsFormOpen(false);
+        } catch (error) {
+            toast.error("Failed to add address.");
         }
-
-        const newAddress = {
-            id: Date.now().toString(),
-            fullAddress: place.formatted_address,
-            location: {
-                lat: place.geometry.location.lat(),
-                lng: place.geometry.location.lng(),
-            },
-        };
-
-        await addAddress(newAddress);
-        setIsAdding(false);
     };
-
-    if (loading || !isLoaded) return <div className="text-center py-16"><div className="loader"></div></div>;
 
     return (
         <div>
-            <h2 className="text-2xl font-bold mb-6 text-gray-800">My Addresses</h2>
-            
-            {addresses.length > 0 ? (
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">Manage Addresses</h2>
+                <button onClick={() => setIsFormOpen(true)} className="btn-primary flex items-center">
+                    <FiIcons.FiPlus className="mr-2"/> Add New Address
+                </button>
+            </div>
+
+            {isFormOpen && (
+                <div className="mb-6">
+                    <AddressForm onSave={handleAddAddress} onCancel={() => setIsFormOpen(false)} />
+                </div>
+            )}
+
+            {loading ? (
+                <p>Loading addresses...</p>
+            ) : (
                 <div className="space-y-4">
                     {addresses.map(address => (
-                        <div key={address.id} className="p-4 border border-gray-200 rounded-lg flex justify-between items-center bg-gray-50">
-                            <div className="flex items-center">
-                                <FiMapPin className="text-gray-500 mr-4" />
-                                <p className="text-sm text-gray-700">{address.fullAddress}</p>
-                            </div>
-                            <button onClick={() => removeAddress(address.id)} className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-100">
-                                <FiTrash2 />
+                        <div key={address.id} className="p-4 border rounded-lg flex justify-between items-start">
+                           <div>
+                                <p className="font-semibold flex items-center"><FiIcons.FiMapPin className="mr-2 text-gray-400"/> {address.type}</p>
+                                <p className="text-gray-600 ml-6">{address.line1}, {address.city}, {address.state} - {address.zip}</p>
+                           </div>
+                            <button onClick={() => deleteAddress(address.id)} className="text-red-500 hover:text-red-700">
+                                <FiIcons.FiTrash2 />
                             </button>
                         </div>
                     ))}
                 </div>
-            ) : (
-                !isAdding && (
-                    <EmptyState
-                        icon={<FiMapPin />}
-                        title="No addresses found"
-                        message="You haven't added any addresses yet. Add one to make checkout faster."
-                        actionText="Add New Address"
-                        onActionClick={() => setIsAdding(true)}
-                    />
-                )
             )}
-
-            <div className="mt-8">
-                {isAdding ? (
-                    <div className="p-4 border-t border-gray-200">
-                        <h3 className="font-semibold text-gray-700 mb-3">Add a New Address</h3>
-                        <Autocomplete
-                            onLoad={(ref) => (autocompleteRef.current = ref)}
-                            onPlaceChanged={handlePlaceSelected}
-                            options={{ componentRestrictions: { country: 'in' } }}
-                        >
-                            <input
-                                type="text"
-                                placeholder="Search for your address or landmark..."
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            />
-                        </Autocomplete>
-                        <button onClick={() => setIsAdding(false)} className="mt-3 text-sm text-gray-600">Cancel</button>
-                    </div>
-                ) : (
-                    addresses.length > 0 && (
-                        <button onClick={() => setIsAdding(true)} className="w-full flex items-center justify-center py-3 px-4 font-medium rounded-lg border-2 border-dashed border-gray-300 hover:bg-gray-50 text-gray-600">
-                            <FiPlus className="mr-2" /> Add New Address
-                        </button>
-                    )
-                )}
-            </div>
         </div>
     );
 };

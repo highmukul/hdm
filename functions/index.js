@@ -1,13 +1,12 @@
-// CommonJS Imports for Firebase Functions
 const { onDocumentCreated, onDocumentUpdated } = require("firebase-functions/v2/firestore");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
-const { logger } = require("firebase-functions");
-
-// Firebase Admin SDK for backend operations
 const admin = require('firebase-admin');
 
-// Initialize Firebase Admin SDK - MUST be done only once
-admin.initializeApp();
+// Initialize Firebase Admin SDK
+if (!admin.apps.length) {
+    admin.initializeApp();
+}
+
 const db = admin.firestore();
 
 // --- Helper Functions ---
@@ -25,12 +24,12 @@ function calculateDiscountedPrice(product) {
 exports.onCreateOrder = onDocumentCreated("orders/{orderId}", async (event) => {
     const snap = event.data;
     if (!snap) {
-        logger.info("onCreateOrder: No data associated with the event, exiting.");
+        console.error("onCreateOrder: No data associated with the event, exiting.");
         return;
     }
     const order = snap.data();
     if (!order.storeId) {
-        logger.error('onCreateOrder: storeId is missing from the order.');
+        console.error('onCreateOrder: storeId is missing from the order.');
         return;
     }
 
@@ -40,13 +39,13 @@ exports.onCreateOrder = onDocumentCreated("orders/{orderId}", async (event) => {
         productBatch.update(productRef, { salesCount: admin.firestore.FieldValue.increment(item.quantity) });
     });
     await productBatch.commit();
-    logger.info("onCreateOrder: Product sales counts updated.");
+    console.log("onCreateOrder: Product sales counts updated.");
 });
 
 exports.onProductUpdate = onDocumentUpdated("stores/{storeId}/products/{productId}", async (event) => {
     const change = event.data;
     if (!change) {
-      logger.info("onProductUpdate: No data associated with the event, exiting.");
+      console.error("onProductUpdate: No data associated with the event, exiting.");
       return;
     }
     const newValue = change.after.data();
@@ -55,7 +54,7 @@ exports.onProductUpdate = onDocumentUpdated("stores/{storeId}/products/{productI
     if (newValue.price !== previousValue.price || newValue.discountRules !== previousValue.discountRules) {
         const discountedPrice = calculateDiscountedPrice(newValue);
         await change.after.ref.update({ discountedPrice });
-        logger.info(`onProductUpdate: Updated discounted price for product ${change.after.id}`);
+        console.log(`onProductUpdate: Updated discounted price for product ${change.after.id}`);
     }
 });
 
@@ -65,7 +64,7 @@ exports.expireDiscounts = onSchedule('every 5 minutes', async (event) => {
     const snapshot = await query.get();
 
     if (snapshot.empty) {
-        logger.info("expireDiscounts: No active discounts to expire.");
+        console.log("expireDiscounts: No active discounts to expire.");
         return;
     }
 
@@ -80,8 +79,11 @@ exports.expireDiscounts = onSchedule('every 5 minutes', async (event) => {
     });
 
     await batch.commit();
-    logger.info(`expireDiscounts: Processed discounts for ${snapshot.docs.length} products.`);
+    console.log(`expireDiscounts: Processed discounts for ${snapshot.docs.length} products.`);
 });
 
 // Export the new function
 exports.sendVerificationEmail = require('./sendVerificationEmail').sendVerificationEmail;
+exports.updateInventoryOnOrder = require('./updateInventoryOnOrder').updateInventoryOnOrder;
+exports.sendOrderUpdateEmail = require('./sendOrderUpdateEmail').sendOrderUpdateEmail;
+exports.applyPromotions = require('./applyPromotions').applyPromotions;

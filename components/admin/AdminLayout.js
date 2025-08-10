@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../context/AuthContext';
-import { FaTachometerAlt, FaBoxOpen, FaUsers, FaCog, FaTags, FaSignOutAlt, FaBars, FaTimes, FaStore, FaUserShield } from 'react-icons/fa'; // Added FaStore and FaUserShield
+import * as FaIcons from 'react-icons/fa';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 
@@ -18,13 +18,14 @@ const AdminLayout = ({ children }) => {
   }, [user, loading, router]);
 
   const adminNavLinks = [
-    { name: 'Dashboard', icon: <FaTachometerAlt />, href: '/admin/dashboard' },
-    { name: 'Products', icon: <FaBoxOpen />, href: '/admin/products' },
-    { name: 'Stores', icon: <FaStore />, href: '/admin/stores' },
-    { name: 'Categories', icon: <FaTags />, href: '/admin/categories' },
-    { name: 'Users', icon: <FaUsers />, href: '/admin/users' },
-    { name: 'Captains', icon: <FaUserShield />, href: '/admin/captains' },
-    { name: 'Settings', icon: <FaCog />, href: '/admin/settings' },
+    { name: 'Dashboard', icon: <FaIcons.FaTachometerAlt />, href: '/admin/dashboard' },
+    { name: 'Products', icon: <FaIcons.FaBoxOpen />, href: '/admin/products' },
+    { name: 'Stores', icon: <FaIcons.FaStore />, href: '/admin/stores' },
+    { name: 'Categories', icon: <FaIcons.FaTags />, href: '/admin/categories' },
+    { name: 'Users', icon: <FaIcons.FaUsers />, href: '/admin/users' },
+    { name: 'Captains', icon: <FaIcons.FaUserShield />, href: '/admin/captains' },
+    { name: 'Payouts', icon: <FaIcons.FaMoneyBillWave />, href: '/admin/payouts' },
+    { name: 'Settings', icon: <FaIcons.FaCog />, href: '/admin/settings' },
   ];
 
   const SidebarContent = () => (
@@ -36,7 +37,7 @@ const AdminLayout = ({ children }) => {
         <ul>
           {adminNavLinks.map(link => (
             <li key={link.name} className="mb-2">
-              <Link href={link.href}>
+              <Link href={link.href} legacyBehavior>
                 <a className={`flex items-center p-3 rounded-lg transition-colors ${router.pathname === link.href ? 'bg-indigo-600 text-white' : 'hover:bg-gray-800'}`}>
                   <span className="mr-4 text-lg">{link.icon}</span>
                   {link.name}
@@ -48,7 +49,7 @@ const AdminLayout = ({ children }) => {
       </nav >
       <div className="p-4 border-t border-gray-800">
         <button onClick={logout} className="w-full flex items-center p-3 rounded-lg text-left hover:bg-red-800 transition-colors">
-          <FaSignOutAlt className="mr-4" /> Logout
+          <FaIcons.FaSignOutAlt className="mr-4" /> Logout
         </button>
       </div>
     </ >
@@ -75,7 +76,7 @@ const AdminLayout = ({ children }) => {
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="h-20 bg-white shadow-sm flex items-center justify-between px-4 md:px-8 border-b">
           <button className="md:hidden" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
-            {isSidebarOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
+            {isSidebarOpen ? <FaIcons.FaTimes size={24} /> : <FaIcons.FaBars size={24} />}
           </button>
           <h1 className="text-xl md:text-2xl font-semibold text-gray-800">Admin Panel</h1>
           <div className="text-right">

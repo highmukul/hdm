@@ -1,30 +1,26 @@
+import Link from 'next/link';
 import Image from 'next/image';
-import { FiStar } from 'react-icons/fi';
-import { getDistance } from '../../utils/getDistance';
+import * as FiIcons from 'react-icons/fi';
 
-export const StoreCard = ({ store, userLocation }) => {
-    const distance = userLocation ? getDistance(userLocation, store.location) : null;
-    const status = store.isOpen ? 'Open' : 'Closed';
-
+const StoreCard = ({ store }) => {
     return (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300">
-            <div className="p-4 flex items-center">
-                <div className="flex-shrink-0">
-                    <Image src={store.logoUrl} alt={`${store.name} logo`} width={64} height={64} className="rounded-full object-cover" />
+        <Link href={`/stores/${store.id}`} legacyBehavior>
+            <a className="block bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                <div className="relative h-40">
+                    <Image src={store.imageUrl} alt={store.name} layout="fill" objectFit="cover" />
                 </div>
-                <div className="ml-4">
-                    <h3 className="text-lg font-semibold text-gray-800">{store.name}</h3>
-                    <div className="flex items-center text-sm text-gray-500 mt-1">
-                        <FiStar className="text-yellow-500 mr-1" />
-                        <span>{store.rating}</span>
-                        {distance && <span className="mx-2">|</span>}
-                        {distance && <span>{distance.toFixed(1)} km away</span>}
-                    </div>
-                    <div className={`text-sm font-semibold mt-2 ${status === 'Open' ? 'text-green-600' : 'text-red-600'}`}>
-                        {status}
+                <div className="p-4">
+                    <h3 className="text-lg font-bold">{store.name}</h3>
+                    <p className="text-gray-600">{store.category}</p>
+                    <div className="flex items-center mt-2">
+                        <span className="text-yellow-500 flex items-center"><FiIcons.FiStar className="mr-1" /> {store.rating}</span>
+                        <span className="text-gray-400 mx-2">•</span>
+                        <span className="text-gray-600">{store.deliveryTime} mins</span>
                     </div>
                 </div>
-            </div>
-        </div>
+            </a>
+        </Link>
     );
 };
+
+export default StoreCard;

@@ -1,25 +1,42 @@
-import { useProducts } from '../../hooks/useProducts';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, A11y } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 import ProductCard from '../products/ProductCard';
+import { motion } from 'framer-motion';
 
-const ProductShowcase = () => {
-  // CORRECTED: The first argument is the storeId (null for all stores), 
-  // and the second is the options object.
-  const { products, loading, error } = useProducts(null, { limit: 8 });
-
+const ProductShowcase = ({ products }) => {
   return (
-    <section className="bg-gray-100 py-20">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl font-bold text-center mb-12">Featured Products</h2>
-        {loading && <div className="text-center">Loading products...</div>}
-        {error && <div className="text-center text-red-500">Could not load products.</div>}
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+    <div className="bg-gray-50 py-20">
+      <div className="container mx-auto px-6">
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">Featured Products</h2>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.7 }}
+        >
+          <Swiper
+            modules={[Navigation, Pagination, A11y]}
+            spaceBetween={30}
+            slidesPerView={1}
+            navigation
+            pagination={{ clickable: true }}
+            breakpoints={{
+              640: { slidesPerView: 2 },
+              768: { slidesPerView: 3 },
+              1024: { slidesPerView: 4 },
+            }}
+          >
+            {products.map((product) => (
+              <SwiperSlide key={product.id}>
+                <ProductCard product={product} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </motion.div>
       </div>
-    </section>
+    </div>
   );
 };
 

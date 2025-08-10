@@ -29,7 +29,7 @@ const JoinCaptain = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.4 }}
         >
-            <Link href="/signup">
+            <Link href="/captain/signup">
                 <a className="bg-white text-primary text-lg font-semibold py-3 px-8 rounded-full hover:bg-gray-100 transition duration-300 transform hover:scale-105 inline-block">
                 Register as a Captain
                 </a>

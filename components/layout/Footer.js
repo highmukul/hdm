@@ -1,86 +1,47 @@
 import Link from 'next/link';
-import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
+import * as FaIcons from 'react-icons/fa';
 
 const Footer = () => {
-  const socialLinks = [
-    { icon: <FaFacebook />, href: 'https://facebook.com', label: 'Facebook' },
-    { icon: <FaTwitter />, href: 'https://twitter.com', label: 'Twitter' },
-    { icon: <FaInstagram />, href: 'https://instagram.com', label: 'Instagram' },
-    { icon: <FaLinkedin />, href: 'https://linkedin.com', label: 'LinkedIn' },
-  ];
-
-  const footerSections = [
-    {
-      title: 'Categories',
-      links: [
-        { name: 'Vegetables & Fruits', href: '/shop?category=vegetables-fruits' },
-        { name: 'Dairy & Breakfast', href: '/shop?category=dairy-breakfast' },
-        { name: 'Munchies', href: '/shop?category=munchies' },
-        { name: 'Cold Drinks & Juices', href: '/shop?category=cold-drinks-juices' },
-      ],
-    },
-    {
-      title: 'Company',
-      links: [
-        { name: 'About', href: '/about' },
-        { name: 'Careers', href: '/careers' },
-        { name: 'Blog', href: '/blog' },
-        { name: 'Contact Us', href: '/contact' },
-      ],
-    },
-     {
-      title: 'For Consumers',
-      links: [
-        { name: 'Terms Of Use', href: '/terms' },
-        { name: 'FAQ', href: '/faq' },
-        { name: 'Privacy Policy', href: '/privacy' },
-        { name: 'Sitemap', href: '/sitemap' },
-      ],
-    }
-  ];
-
-  return (
-    <footer className="bg-gray-900 text-white pt-16 pb-8">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-8">
-          {/* Logo and Social */}
-          <div className="md:col-span-1 lg:col-span-2">
-            <h2 className="text-3xl font-bold text-white mb-4">Hadoti Daily Mart</h2>
-            <p className="text-gray-400 mb-6">Your daily essentials, delivered in minutes.</p>
-            <div className="flex space-x-4">
-              {socialLinks.map((social) => (
-                <a key={social.label} href={social.href} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
-                  {social.icon}
-                  <span className="sr-only">{social.label}</span>
-                </a>
-              ))}
+    return (
+        <footer className="bg-gray-800 text-white">
+            <div className="container mx-auto px-6 py-8">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <div>
+                        <h3 className="text-xl font-bold mb-4">Hadoti Daily</h3>
+                        <p className="text-gray-400">Your one-stop shop for fresh groceries, delivered fast.</p>
+                    </div>
+                    <div>
+                        <h3 className="font-bold mb-4">Quick Links</h3>
+                        <ul>
+                            <li><Link href="/about" legacyBehavior><a className="text-gray-400 hover:text-white">About Us</a></Link></li>
+                            <li><Link href="/contact" legacyBehavior><a className="text-gray-400 hover:text-white">Contact</a></Link></li>
+                            <li><Link href="/faq" legacyBehavior><a className="text-gray-400 hover:text-white">FAQ</a></Link></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 className="font-bold mb-4">Follow Us</h3>
+                        <div className="flex space-x-4">
+                            <a href="#" className="text-gray-400 hover:text-white"><FaIcons.FaFacebook size={24} /></a>
+                            <a href="#" className="text-gray-400 hover:text-white"><FaIcons.FaTwitter size={24} /></a>
+                            <a href="#" className="text-gray-400 hover:text-white"><FaIcons.FaInstagram size={24} /></a>
+                            <a href="#" className="text-gray-400 hover:text-white"><FaIcons.FaLinkedin size={24} /></a>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 className="font-bold mb-4">Newsletter</h3>
+                        <p className="text-gray-400 mb-2">Subscribe to get the latest deals.</p>
+                        <form className="flex">
+                            <input type="email" placeholder="Your Email" className="w-full p-2 rounded-l-md text-gray-800" />
+                            <button className="bg-blue-600 p-2 rounded-r-md">Subscribe</button>
+                        </form>
+                    </div>
+                </div>
+                <div className="mt-8 border-t border-gray-700 pt-6 text-center text-gray-400">
+                    &copy; {new Date().getFullYear()} Hadoti Daily. All rights reserved.
+                </div>
             </div>
-          </div>
-          
-          {/* Footer Links */}
-          {footerSections.map((section) => (
-            <div key={section.title}>
-              <h3 className="font-semibold tracking-wider uppercase mb-4">{section.title}</h3>
-              <ul>
-                {section.links.map((link) => (
-                  <li key={link.name} className="mb-2">
-                    <Link href={link.href} className="text-gray-400 hover:text-white transition-colors">{link.name}</Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-12 pt-8 border-t border-gray-800 text-center text-gray-500">
-          <p>&copy; {new Date().getFullYear()} Hadoti Daily Mart. All rights reserved.</p>
-          <p className="text-sm mt-1">
-            Built with ❤️ for a better tomorrow.
-          </p>
-        </div>
-      </div>
-    </footer>
-  );
+        </footer>
+    );
 };
 
 export default Footer;

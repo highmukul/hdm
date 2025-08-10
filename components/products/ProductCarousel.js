@@ -1,57 +1,43 @@
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import SwiperCore, { Navigation, Pagination, Autoplay } from 'swiper';
 import ProductCard from './ProductCard';
-import { ProductSkeleton } from './ProductSkeleton';
-import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import { useRef } from 'react';
+import * as FiIcons from 'react-icons/fi';
 
-const ProductCarousel = ({ title, products, loading }) => {
-    const scrollRef = useRef(null);
+SwiperCore.use([Navigation, Pagination, Autoplay]);
 
-    const scroll = (direction) => {
-        const { current } = scrollRef;
-        if (current) {
-            const scrollAmount = direction === 'left' ? -300 : 300;
-            current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-        }
-    };
-
+const ProductCarousel = ({ products }) => {
     return (
         <div className="relative">
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
-                <div className="flex items-center space-x-2">
-                    <button 
-                        onClick={() => scroll('left')}
-                        className="p-2 rounded-full bg-white shadow-md hover:bg-gray-100 transition-colors"
-                        aria-label="Scroll left"
-                    >
-                        <FiChevronLeft />
-                    </button>
-                    <button 
-                        onClick={() => scroll('right')}
-                        className="p-2 rounded-full bg-white shadow-md hover:bg-gray-100 transition-colors"
-                        aria-label="Scroll right"
-                    >
-                        <FiChevronRight />
-                    </button>
-                </div>
-            </div>
-            <div
-                ref={scrollRef}
-                className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide"
+            <Swiper
+                spaceBetween={20}
+                slidesPerView={4}
+                navigation={{
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                }}
+                pagination={{ clickable: true }}
+                autoplay={{ delay: 5000 }}
+                breakpoints={{
+                    320: { slidesPerView: 1 },
+                    640: { slidesPerView: 2 },
+                    768: { slidesPerView: 3 },
+                    1024: { slidesPerView: 4 },
+                }}
             >
-                {loading ? (
-                    Array.from({ length: 6 }).map((_, i) => (
-                        <div className="flex-shrink-0 w-48 md:w-56" key={i}>
-                            <ProductSkeleton />
-                        </div>
-                    ))
-                ) : (
-                    products.map(product => (
-                        <div className="flex-shrink-0 w-48 md:w-56" key={product.id}>
-                            <ProductCard product={product} />
-                        </div>
-                    ))
-                )}
+                {products.map(product => (
+                    <SwiperSlide key={product.id}>
+                        <ProductCard product={product} />
+                    </SwiperSlide>
+                ))}
+            </Swiper>
+            <div className="swiper-button-prev absolute top-1/2 left-0 transform -translate-y-1/2 z-10 p-2 rounded-full bg-white shadow-md cursor-pointer">
+                <FiIcons.FiChevronLeft size={24} />
+            </div>
+            <div className="swiper-button-next absolute top-1/2 right-0 transform -translate-y-1/2 z-10 p-2 rounded-full bg-white shadow-md cursor-pointer">
+                <FiIcons.FiChevronRight size={24} />
             </div>
         </div>
     );

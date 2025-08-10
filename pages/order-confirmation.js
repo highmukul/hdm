@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import Layout from '../components/layout/Layout';
-import { FaCheckCircle } from 'react-icons/fa';
+import * as FaIcons from 'react-icons/fa';
+import Link from 'next/link';
 
 const OrderConfirmationPage = () => {
     const router = useRouter();
@@ -9,24 +9,23 @@ const OrderConfirmationPage = () => {
 
     return (
         <Layout>
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-                <FaCheckCircle className="text-green-500 text-6xl mx-auto mb-6" />
-                <h1 className="text-3xl font-bold text-gray-800">Thank You for Your Order!</h1>
-                <p className="text-gray-600 mt-4">Your order has been placed successfully.</p>
-                {orderId && (
-                    <p className="text-lg mt-2">
-                        Your Order ID is: <span className="font-semibold text-indigo-600">{orderId}</span>
-                    </p>
-                )}
-                <p className="mt-6">
-                    We have sent an order confirmation to your email. You can check the status of your order in your order history.
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+                <FaIcons.FaCheckCircle className="text-green-500 text-6xl mb-4" />
+                <h1 className="text-4xl font-extrabold text-gray-800">Thank you for your order!</h1>
+                <p className="mt-2 text-lg text-gray-600">
+                    Your order <span className="font-bold text-blue-600">#{orderId}</span> has been placed successfully.
                 </p>
-                <div className="mt-10">
-                    <Link href="/profile?tab=orders">
-                        <a className="btn-primary mr-4">View Order History</a>
+                <p className="mt-2 text-gray-500">
+                    We've sent a confirmation to your email. You can also track your order status in your profile.
+                </p>
+                <div className="mt-8 flex flex-col sm:flex-row gap-4">
+                    <Link href={`/track-order/${orderId}`} legacyBehavior>
+                        <a className="py-3 px-6 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-transform transform hover:-translate-y-1">
+                            Track Your Order
+                        </a>
                     </Link>
-                    <Link href="/shop">
-                        <a className="text-indigo-600 hover:text-indigo-800 font-semibold">
+                    <Link href="/shop" legacyBehavior>
+                        <a className="py-3 px-6 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition">
                             Continue Shopping
                         </a>
                     </Link>

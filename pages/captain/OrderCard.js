@@ -1,37 +1,56 @@
-import { useState } from 'react';
-import { MapPinIcon } from '@heroicons/react/24/solid';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
 
-export default function OrderCard({ order, onAccept }) {
-    const [isAccepting, setIsAccepting] = useState(false);
-    
-    const handleAccept = async () => {
-        setIsAccepting(true);
-        await onAccept(order.id);
-        // The parent will handle the re-render, so we don't need to setIsAccepting(false)
+const OrderCard = ({ order }) => {
+    if (!order) {
+        return null;
     }
 
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'Delivered': return 'bg-green-100 text-green-800';
+            case 'Processing': return 'bg-yellow-100 text-yellow-800';
+            case 'Cancelled': return 'bg-red-100 text-red-800';
+            default: return 'bg-gray-100 text-gray-800';
+        }
+    };
+
     return (
-        <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-primary">
-            <div className="flex justify-between items-start">
-                <div>
-                    <h3 className="text-xl font-bold">Order for {order.customerName}</h3>
-                    <div className="flex items-center text-gray-600 mt-2">
-                        <MapPinIcon className="w-5 h-5 mr-2" />
-                        <span>Delivery to: {order.deliveryAddress.city}, {order.deliveryAddress.zipCode}</span>
-                    </div>
-                </div>
-                <div className="text-right">
-                    <p className="font-bold text-2xl">${order.subtotal.toFixed(2)}</p>
-                    <p className="text-sm text-gray-500">{order.items.length} items</p>
-                </div>
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white p-6 rounded-lg shadow-lg"
+        >
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Order Details</h3>
+            <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 hover:underline">
+                                <Link href={`/admin/orders/${order.id}`} legacyBehavior><a>#{order.id.substring(0, 6)}</a></Link>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{order.customerName || 'N/A'}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">₹{order.total.toFixed(2)}</td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}`}>
+                                    {order.status}
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            <div className="mt-4 border-t pt-4">
-                <p><strong>Scheduled for:</strong> {order.deliverySlot.day}, {order.deliverySlot.range}</p>
-                <button onClick={handleAccept} disabled={isAccepting}
-                        className="w-full mt-4 bg-green-500 text-white py-2 rounded-lg font-semibold hover:bg-green-600 disabled:bg-gray-400">
-                    {isAccepting ? 'Accepting...' : 'Accept Order'}
-                </button>
-            </div>
-        </div>
+        </motion.div>
     );
-}
+};
+
+export default OrderCard;

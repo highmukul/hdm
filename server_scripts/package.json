@@ -2,7 +2,7 @@
   "name": "server_scripts",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "setadmin.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,6 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "firebase-admin": "^13.4.0"
+    "firebase-admin": "^11.11.1"
   }
 }

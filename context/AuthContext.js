@@ -5,7 +5,14 @@ import { auth, db } from '../firebase/config';
 import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
 
-const AuthContext = createContext();
+const AuthContext = createContext({
+    user: null,
+    loading: true,
+    signup: async () => {},
+    login: async () => {},
+    signInWithGoogle: async () => {},
+    logout: async () => {},
+});
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -113,4 +120,6 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+    return useContext(AuthContext);
+}

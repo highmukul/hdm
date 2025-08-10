@@ -1,31 +1,33 @@
-import { getDistance } from '../../utils/getDistance';
-import { useAuth } from '../../context/AuthContext';
 import { db } from '../../firebase/config';
-import { doc, getDoc } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import { doc, updateDoc } from 'firebase/firestore';
+import toast from 'react-hot-toast';
 
-export const OrderCard = ({ order, onClick }) => {
-    const { user } = useAuth();
-    const [distance, setDistance] = useState(null);
+const OrderCard = ({ order }) => {
+    const handleAccept = async () => {
+        const orderRef = doc(db, 'orders', order.id);
+        await updateDoc(orderRef, { status: 'accepted' });
+        toast.success('Order accepted!');
+    };
 
-    useEffect(() => {
-        const getCaptainLocation = async () => {
-            if (!user) return;
-            const captainDoc = await getDoc(doc(db, 'captains', user.uid));
-            const captainLocation = captainDoc.data()?.location;
-            if (captainLocation) {
-                setDistance(getDistance(captainLocation, order.shippingAddress.location));
-            }
-        };
-        getCaptainLocation();
-    }, [user, order]);
+    const handleReject = async () => {
+        const orderRef = doc(db, 'orders', order.id);
+        await updateDoc(orderRef, { status: 'rejected' });
+        toast.error('Order rejected!');
+    };
 
     return (
-        <div className="p-4 border rounded-lg cursor-pointer hover:bg-gray-50" onClick={onClick}>
-            <p className="font-semibold">Order #{order.id.slice(0, 6)}</p>
-            <p>Distance: {distance ? `${distance.toFixed(1)} km` : 'Calculating...'}</p>
-            <p>Items: {order.items.length}</p>
-            <p className="font-bold">Earn: ₹{order.total * 0.15}</p> {/* Example earning logic */}
+        <div className="bg-white p-4 rounded-lg shadow-md">
+            <div className="flex justify-between">
+                <h3 className="font-bold">Order #{order.id.substring(0, 6)}...</h3>
+                <p className="font-bold">₹{order.total.toFixed(2)}</p>
+            </div>
+            <p className="text-sm text-gray-500">{order.items.length} items</p>
+            <div className="mt-4 flex justify-end space-x-2">
+                <button onClick={handleReject} className="bg-red-500 text-white px-3 py-1 rounded-md text-sm">Reject</button>
+                <button onClick={handleAccept} className="bg-green-500 text-white px-3 py-1 rounded-md text-sm">Accept</button>
+            </div>
         </div>
     );
 };
+
+export default OrderCard;

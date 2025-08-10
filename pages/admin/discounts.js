@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { db } from '../../firebase/config';
 import { collection, onSnapshot, deleteDoc, doc, setDoc } from 'firebase/firestore';
-import { FiTrash2, FiPlus, FiTag, FiPercent, FiDollarSign } from 'react-icons/fi';
+import * as FiIcons from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const DiscountsPage = () => {
@@ -85,7 +85,7 @@ const DiscountsPage = () => {
                             />
                         </div>
                         <button type="submit" className="w-full flex items-center justify-center bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-                            <FiPlus className="mr-2"/>Add Coupon
+                            <FiIcons.FiPlus className="mr-2"/>Add Coupon
                         </button>
                     </form>
                 </div>
@@ -104,7 +104,7 @@ const DiscountsPage = () => {
                                     <div key={coupon.id} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
                                        <div className="flex items-center">
                                             <div className="mr-4 text-blue-500">
-                                                {coupon.type === 'percentage' ? <FiPercent size={20} /> : <FiDollarSign size={20} />}
+                                                {coupon.type === 'percentage' ? <FiIcons.FiPercent size={20} /> : <FiIcons.FiDollarSign size={20} />}
                                             </div>
                                             <div>
                                                 <span className="font-mono text-gray-800 font-bold text-base">{coupon.code}</span>
@@ -112,7 +112,7 @@ const DiscountsPage = () => {
                                            </div>
                                        </div>
                                        <button onClick={() => handleDeleteCoupon(coupon.id)} className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-100">
-                                            <FiTrash2 size={18} />
+                                            <FiIcons.FiTrash2 size={18} />
                                        </button>
                                     </div>
                                 ))}

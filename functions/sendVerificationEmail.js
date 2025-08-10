@@ -2,40 +2,67 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
 
-// It's recommended to use a dedicated email service like SendGrid or Mailgun in production.
-// For this example, we're using a Gmail account.
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: functions.config().gmail.email,
-        pass: functions.config().gmail.password,
-    },
-});
+if (!admin.apps.length) {
+    admin.initializeApp();
+}
+
+let transporter;
+try {
+    const gmailEmail = functions.config().gmail?.email;
+    const gmailPassword = functions.config().gmail?.password;
+
+    if (gmailEmail && gmailPassword) {
+        transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: { user: gmailEmail, pass: gmailPassword },
+        });
+    } else {
+        console.warn('Gmail credentials not set in Firebase functions config.');
+    }
+} catch (error) {
+    console.error('Error creating transporter:', error);
+}
 
 exports.sendVerificationEmail = functions.https.onCall(async (data, context) => {
-    // Ensure the user is an admin
-    if (!context.auth.token.admin) {
+    if (!context.auth || !context.auth.token?.admin) {
+        console.error('Permission denied. User is not an admin.');
         throw new functions.https.HttpsError('permission-denied', 'Only admins can call this function.');
     }
 
     const { captainId, status } = data;
 
-    const captainDoc = await admin.firestore().collection('captains').doc(captainId).get();
-    const captain = captainDoc.data();
-
-    let mailOptions = {
-        from: 'Your App Name <yourapp@example.com>',
-        to: captain.email,
-        subject: `Your Captain Application has been ${status}`,
-        html: `<p>Hi ${captain.name},</p>
-               <p>Your application to become a captain has been ${status}.</p>
-               ${status === 'approved' ? '<p>You can now log in to your dashboard and start accepting orders.</p>' : ''}
-               <p>Thanks,</p>
-               <p>The Team</p>`,
-    };
-
     try {
+        const captainDoc = await admin.firestore()
+            .collection('captains')
+            .doc(captainId)
+            .get();
+
+        if (!captainDoc.exists) {
+            console.error('Captain not found:', captainId);
+            throw new functions.https.HttpsError('not-found', 'Captain not found.');
+        }
+
+        const captain = captainDoc.data();
+
+        if (!transporter) {
+            throw new functions.https.HttpsError('failed-precondition', 'Email transporter not initialized.');
+        }
+
+        const mailOptions = {
+            from: `Your App Name <${functions.config().gmail.email}>`,
+            to: captain.email,
+            subject: `Your Captain Application has been ${status}`,
+            html: `
+                <p>Hi ${captain.name},</p>
+                <p>Your application to become a captain has been <strong>${status}</strong>.</p>
+                ${status === 'approved' ? '<p>You can now log in to your dashboard and start accepting orders.</p>' : ''}
+                <p>Thanks,</p>
+                <p>The Team</p>
+            `,
+        };
+
         await transporter.sendMail(mailOptions);
+
         return { success: true };
     } catch (error) {
         console.error('Error sending email:', error);

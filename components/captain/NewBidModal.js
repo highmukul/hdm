@@ -1,58 +1,26 @@
-import { motion } from 'framer-motion';
-import { FaMapMarkerAlt, FaRupeeSign, FaRoad } from 'react-icons/fa';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import * as FaIcons from 'react-icons/fa';
 
-const NewBidModal = ({ bid, onDecline }) => {
-    const handleAccept = async () => {
-        const functions = getFunctions();
-        const acceptBid = httpsCallable(functions, 'acceptBid');
-        try {
-            await acceptBid({ orderId: bid.orderId });
-            // The modal will disappear automatically as the bid is deleted from the subcollection.
-        } catch (error) {
-            console.error("Failed to accept bid:", error.message);
-        }
-    };
-
+const NewBidModal = ({ order, onPlaceBid, onCancel }) => {
     return (
-        <motion.div
-            initial={{ y: 300 }}
-            animate={{ y: 0 }}
-            exit={{ y: 300 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 30 }}
-            className="fixed bottom-4 left-4 right-4 p-5 bg-white shadow-2xl rounded-2xl z-50 max-w-lg mx-auto"
-        >
-            <div className="text-center">
-                <p className="text-green-600 font-bold text-5xl mb-3">
-                    <FaRupeeSign className="inline -mt-2" />{bid.earnings}
-                </p>
-                <p className="text-gray-500 -mt-2 mb-4">Your potential earnings</p>
-            </div>
-            
-            <div className="flex items-center justify-around text-center border-t border-b py-4 my-4">
-                <div className="flex items-center">
-                    <FaRoad className="text-2xl text-indigo-500 mr-3" />
-                    <div>
-                        <p className="font-bold text-xl">{bid.distance} km</p>
-                        <p className="text-sm text-gray-500">Distance</p>
-                    </div>
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
+            <div className="bg-white rounded-lg shadow-2xl p-8 max-w-lg w-full">
+                <h2 className="text-2xl font-bold mb-4 text-gray-800">Bid for this Order</h2>
+                <div className="space-y-3 text-gray-600">
+                    <p className="flex items-center"><FaIcons.FaMapMarkerAlt className="mr-3 text-red-500" /> From: {order.store.name}</p>
+                    <p className="flex items-center"><FaIcons.FaMapMarkerAlt className="mr-3 text-green-500" /> To: {order.shippingAddress.line1}</p>
+                    <p className="flex items-center"><FaIcons.FaRoad className="mr-3" /> Distance: ~{order.distance.toFixed(2)} km</p>
+                    <p className="flex items-center text-lg font-semibold"><FaIcons.FaRupeeSign className="mr-3" /> Base Fee: ₹{order.deliveryFee.toFixed(2)}</p>
+                </div>
+                <div className="mt-6">
+                    <label htmlFor="bid" className="block text-sm font-medium text-gray-700">Your Bid (must be lower than base fee)</label>
+                    <input type="number" id="bid" name="bid" className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                </div>
+                <div className="mt-8 flex justify-end space-x-4">
+                    <button onClick={onCancel} className="px-6 py-2 rounded-md bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300">Cancel</button>
+                    <button onClick={() => onPlaceBid(/* get bid value */)} className="px-6 py-2 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700">Place Bid</button>
                 </div>
             </div>
-
-            <div className="text-left mb-6">
-                <p className="font-semibold text-gray-500 text-sm">DELIVER TO</p>
-                <p className="flex items-center"><FaMapMarkerAlt className="w-4 h-4 mr-2 text-red-500" /> {bid.customerAddress}</p>
-            </div>
-            
-            <div className="flex justify-between space-x-4">
-                <button onClick={onDecline} className="w-1/3 py-3 text-lg font-bold bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">
-                    Decline
-                </button>
-                <button onClick={handleAccept} className="w-2/3 py-3 text-lg font-bold text-white bg-green-500 rounded-lg hover:bg-green-600">
-                    Accept
-                </button>
-            </div>
-        </motion.div>
+        </div>
     );
 };
 

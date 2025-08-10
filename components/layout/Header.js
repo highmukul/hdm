@@ -2,91 +2,63 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
-import { useTheme } from '../../context/ThemeContext';
-import { FaShoppingCart, FaUserCircle, FaBars, FaTimes, FaMoon, FaSun, FaBox, FaSignOutAlt } from 'react-icons/fa';
-import Search from '../common/Search';
-import { AnimatePresence, motion } from 'framer-motion';
+import { useRouter } from 'next/router';
+import * as FaIcons from 'react-icons/fa';
 
 const Header = () => {
-  const { cartCount } = useCart();
-  const { theme, toggleTheme } = useTheme();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  return (
-    <header className="bg-card-background/80 backdrop-blur-lg shadow-sm sticky top-0 z-50 border-b border-border">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          <Link href="/" className="text-2xl font-bold text-primary">Hadoti</Link>
-          <div className="hidden lg:flex flex-1 justify-center px-8"><Search /></div>
-          <div className="hidden lg:flex items-center space-x-2">
-            <ThemeToggleButton theme={theme} toggleTheme={toggleTheme} />
-            <Link href="/shop" className="font-semibold text-text-secondary hover:text-primary p-2 rounded-lg">Shop</Link>
-            <UserMenu />
-            <CartLink cartCount={cartCount} />
-          </div>
-          <div className="lg:hidden flex items-center">
-            <ThemeToggleButton theme={theme} toggleTheme={toggleTheme} />
-            <button onClick={() => setIsMenuOpen(true)} className="ml-2"><FaBars size={24}/></button>
-          </div>
-        </div>
-      </div>
-      <AnimatePresence>
-        {isMenuOpen && <MobileMenu closeMenu={() => setIsMenuOpen(false)} />}
-      </AnimatePresence>
-    </header>
-  );
-};
-
-const UserMenu = () => {
     const { user, logout } = useAuth();
-    return user ? (
-        <div className="relative">
-            <Link href="/profile" className="p-2 rounded-full hover:bg-background"><FaUserCircle size={24}/></Link>
-            {/* A full dropdown could be implemented here */}
-        </div>
-    ) : <AuthButtons />;
-};
+    const { cartItems } = useCart();
+    const [searchQuery, setSearchQuery] = useState('');
+    const router = useRouter();
 
-const AuthButtons = () => (
-    <>
-        <Link href="/login" className="font-semibold text-text-secondary hover:text-primary p-2 rounded-lg">Login</Link>
-        <Link href="/signup" className="btn-primary ml-2">Sign Up</Link>
-    </>
-);
+    const handleSearch = (e) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            router.push(`/search?q=${searchQuery}`);
+        }
+    };
 
-const CartLink = ({ cartCount }) => (
-    <Link href="/cart" className="relative p-2 rounded-full hover:bg-background">
-        <FaShoppingCart size={24}/>
-        {cartCount > 0 && <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-secondary rounded-full">{cartCount}</span>}
-    </Link>
-);
-
-const ThemeToggleButton = ({ theme, toggleTheme }) => (
-    <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-background">{theme === 'light' ? <FaMoon size={20}/> : <FaSun size={20}/>}</button>
-);
-
-const MobileMenu = ({ closeMenu }) => {
-    const { user, logout } = useAuth();
-    const { cartCount } = useCart();
     return (
-        <motion.div 
-            initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed top-0 right-0 h-full w-full max-w-sm bg-card-background shadow-2xl z-50 p-6 flex flex-col"
-        >
-            <div className="flex justify-between items-center mb-10">
-                <h2 className="text-xl font-bold">Menu</h2>
-                <button onClick={closeMenu}><FaTimes size={24}/></button>
-            </div>
-            <div className="flex-grow">
-                <Link href="/shop" className="flex items-center p-4 text-lg font-semibold hover:bg-background rounded-lg"><FaBox className="mr-4"/>Shop</Link>
-                <Link href="/cart" className="flex items-center p-4 text-lg font-semibold hover:bg-background rounded-lg"><FaShoppingCart className="mr-4"/>Cart ({cartCount})</Link>
-                {user && <Link href="/profile" className="flex items-center p-4 text-lg font-semibold hover:bg-background rounded-lg"><FaUserCircle className="mr-4"/>Profile</Link>}
-            </div>
-            <div className="mt-auto">
-                {user ? <button onClick={logout} className="w-full flex items-center p-4 text-lg font-semibold hover:bg-background rounded-lg text-red-500"><FaSignOutAlt className="mr-4"/>Logout</button> : <AuthButtons />}
-            </div>
-        </motion.div>
+        <header className="bg-white shadow-md">
+            <nav className="container mx-auto px-6 py-3">
+                <div className="flex justify-between items-center">
+                    <Link href="/" legacyBehavior>
+                        <a className="text-xl font-semibold text-gray-700">Hadoti Daily</a>
+                    </Link>
+                    <form onSubmit={handleSearch} className="relative w-full md:w-96 mx-4">
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search for products..."
+                            className="w-full px-4 py-2 border rounded-full"
+                        />
+                        <button type="submit" className="absolute right-0 top-0 mt-3 mr-4">
+                            <FaIcons.FaSearch />
+                        </button>
+                    </form>
+                    <div>
+                        <Link href="/cart" legacyBehavior>
+                            <a className="relative text-gray-700 hover:text-gray-900 mr-4">
+                                <FaIcons.FaShoppingCart />
+                                {cartItems.length > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                                        {cartItems.length}
+                                    </span>
+                                )}
+                            </a>
+                        </Link>
+                        {user ? (
+                            <button onClick={logout} className="text-gray-700 hover:text-gray-900">Logout</button>
+                        ) : (
+                            <Link href="/login" legacyBehavior>
+                                <a className="text-gray-700 hover:text-gray-900">Login</a>
+                            </Link>
+                        )}
+                    </div>
+                </div>
+            </nav>
+        </header>
     );
 };
 
