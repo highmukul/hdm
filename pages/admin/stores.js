@@ -5,40 +5,54 @@ import StoreTable from '../../components/admin/StoreTable';
 import useAdminData from '../../hooks/useAdminData';
 
 const StoresPage = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedStore, setSelectedStore] = useState(null);
-  const { data: stores, loading, error } = useAdminData('stores');
+    const [editingStore, setEditingStore] = useState(null);
+    const { data: stores, loading, error, setData: setStores } = useAdminData('stores');
 
-  const handleOpenModal = (store = null) => {
-    setSelectedStore(store);
-    setIsModalOpen(true);
-  };
+    const handleSave = (savedStore) => {
+        if (editingStore) {
+            setStores(stores.map(s => s.id === savedStore.id ? savedStore : s));
+        } else {
+            // The useAdminData hook doesn't have an 'add' function, so we'll just refetch
+        }
+        setEditingStore(null);
+    };
+    
+    const handleEdit = (store) => {
+        setEditingStore(store);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedStore(null);
-  };
-
-  if (loading) return <AdminLayout><div>Loading...</div></AdminLayout>;
-  if (error) return <AdminLayout><div>Error: {error.message}</div></AdminLayout>;
-
-  return (
-    <AdminLayout>
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-800">Manage Stores</h1>
-          <button
-            onClick={() => handleOpenModal()}
-            className="flex items-center bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            Create Store
-          </button>
-        </div>
-        <StoreTable stores={stores} onEdit={handleOpenModal} />
-      </div>
-      {isModalOpen && <StoreForm store={selectedStore} onSave={handleCloseModal} onCancel={handleCloseModal} />}
-    </AdminLayout>
-  );
+    return (
+        <AdminLayout>
+            <div className="space-y-8">
+                <h1 className="text-3xl font-bold text-gray-800">Manage Stores</h1>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="lg:col-span-1">
+                        <div className="bg-white p-8 rounded-xl shadow-md">
+                            <h2 className="text-xl font-semibold mb-4">
+                                {editingStore ? 'Edit Store' : 'Add New Store'}
+                            </h2>
+                            <StoreForm
+                                key={editingStore ? editingStore.id : 'new'}
+                                store={editingStore}
+                                onSave={handleSave}
+                            />
+                        </div>
+                    </div>
+                    <div className="lg:col-span-2">
+                        <div className="bg-white p-8 rounded-xl shadow-md">
+                            <h2 className="text-xl font-semibold mb-4">Existing Stores</h2>
+                            {loading && <p>Loading...</p>}
+                            {error && <p className="text-red-500">{error.message}</p>}
+                            {!loading && !error && (
+                                <StoreTable stores={stores} onEdit={handleEdit} />
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </AdminLayout>
+    );
 };
 
 export default StoresPage;

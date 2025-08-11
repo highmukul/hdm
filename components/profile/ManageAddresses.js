@@ -1,55 +1,63 @@
 import { useState } from 'react';
 import { useUserAddresses } from '../../hooks/useUserAddresses';
+import { useAuth } from '../../context/AuthContext';
 import AddressForm from './AddressForm';
-import * as FiIcons from 'react-icons/fi';
-import toast from 'react-hot-toast';
+import * as FaIcons from 'react-icons/fa';
 
 const ManageAddresses = () => {
-    const { addresses, addAddress, deleteAddress, loading } = useUserAddresses();
-    const [isFormOpen, setIsFormOpen] = useState(false);
+    const { user } = useAuth();
+    const { addresses, loading, addAddress, updateAddress, deleteAddress } = useUserAddresses(user?.uid);
+    const [editingAddress, setEditingAddress] = useState(null);
+    const [isAdding, setIsAdding] = useState(false);
 
-    const handleAddAddress = async (addressData) => {
-        try {
+    const handleSave = async (addressData) => {
+        if (editingAddress) {
+            await updateAddress(editingAddress.id, addressData);
+        } else {
             await addAddress(addressData);
-            toast.success("Address added!");
-            setIsFormOpen(false);
-        } catch (error) {
-            toast.error("Failed to add address.");
         }
+        setEditingAddress(null);
+        setIsAdding(false);
     };
 
+    const handleCancel = () => {
+        setEditingAddress(null);
+        setIsAdding(false);
+    };
+
+    if (loading) return <p>Loading addresses...</p>;
+
     return (
-        <div>
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">Manage Addresses</h2>
-                <button onClick={() => setIsFormOpen(true)} className="btn-primary flex items-center">
-                    <FiIcons.FiPlus className="mr-2"/> Add New Address
-                </button>
-            </div>
-
-            {isFormOpen && (
-                <div className="mb-6">
-                    <AddressForm onSave={handleAddAddress} onCancel={() => setIsFormOpen(false)} />
-                </div>
-            )}
-
-            {loading ? (
-                <p>Loading addresses...</p>
+        <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Manage Addresses</h2>
+            {isAdding || editingAddress ? (
+                <AddressForm 
+                    address={editingAddress} 
+                    onSave={handleSave}
+                    onCancel={handleCancel}
+                />
             ) : (
-                <div className="space-y-4">
-                    {addresses.map(address => (
-                        <div key={address.id} className="p-4 border rounded-lg flex justify-between items-start">
-                           <div>
-                                <p className="font-semibold flex items-center"><FiIcons.FiMapPin className="mr-2 text-gray-400"/> {address.type}</p>
-                                <p className="text-gray-600 ml-6">{address.line1}, {address.city}, {address.state} - {address.zip}</p>
-                           </div>
-                            <button onClick={() => deleteAddress(address.id)} className="text-red-500 hover:text-red-700">
-                                <FiIcons.FiTrash2 />
-                            </button>
-                        </div>
-                    ))}
-                </div>
+                <button onClick={() => setIsAdding(true)} className="px-4 py-2 rounded bg-blue-600 text-white">
+                    Add New Address
+                </button>
             )}
+
+            <div className="space-y-4">
+                {addresses.map(address => (
+                    <div key={address.id} className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow flex justify-between items-start">
+                        <div>
+                             <p className="font-bold">{address.name} {address.isPrimary && <span className="text-xs text-green-500">(Primary)</span>}</p>
+                             <p>{address.addressLine1}, {address.addressLine2}</p>
+                             <p>{address.city}, {address.state} - {address.pincode}</p>
+                             <p>Mobile: {address.mobile}</p>
+                        </div>
+                        <div className="flex space-x-2">
+                            <button onClick={() => setEditingAddress(address)}><FaIcons.FaEdit className="text-blue-500"/></button>
+                            <button onClick={() => deleteAddress(address.id)}><FaIcons.FaTrash className="text-red-500"/></button>
+                        </div>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 };

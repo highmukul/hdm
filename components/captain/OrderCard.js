@@ -2,7 +2,7 @@ import { db } from '../../firebase/config';
 import { doc, updateDoc } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 
-const OrderCard = ({ order }) => {
+export const OrderCard = ({ order }) => {
     const handleAccept = async () => {
         const orderRef = doc(db, 'orders', order.id);
         await updateDoc(orderRef, { status: 'accepted' });
@@ -29,5 +29,3 @@ const OrderCard = ({ order }) => {
         </div>
     );
 };
-
-export default OrderCard;

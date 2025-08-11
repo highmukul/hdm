@@ -2,14 +2,11 @@ const { onDocumentCreated, onDocumentUpdated } = require("firebase-functions/v2/
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const admin = require('firebase-admin');
 
-// Initialize Firebase Admin SDK
 if (!admin.apps.length) {
     admin.initializeApp();
 }
 
 const db = admin.firestore();
-
-// --- Helper Functions ---
 
 function calculateDiscountedPrice(product) {
     const rule = product.discountRules?.[0];
@@ -18,8 +15,6 @@ function calculateDiscountedPrice(product) {
     if (rule.type === 'percent') return product.price * (1 - rule.value / 100);
     return product.price;
 }
-
-// --- Firestore and Pub/Sub Functions ---
 
 exports.onCreateOrder = onDocumentCreated("orders/{orderId}", async (event) => {
     const snap = event.data;
@@ -82,8 +77,7 @@ exports.expireDiscounts = onSchedule('every 5 minutes', async (event) => {
     console.log(`expireDiscounts: Processed discounts for ${snapshot.docs.length} products.`);
 });
 
-// Export the new function
-exports.sendVerificationEmail = require('./sendVerificationEmail').sendVerificationEmail;
-exports.updateInventoryOnOrder = require('./updateInventoryOnOrder').updateInventoryOnOrder;
-exports.sendOrderUpdateEmail = require('./sendOrderUpdateEmail').sendOrderUpdateEmail;
-exports.applyPromotions = require('./applyPromotions').applyPromotions;
+exports.sendVerificationEmail = require('./sendVerificationEmail');
+exports.updateInventoryOnOrder = require('./updateInventoryOnOrder');
+exports.sendOrderUpdateEmail = require('./sendOrderUpdateEmail');
+exports.applyPromotions = require('./applyPromotions');

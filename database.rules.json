@@ -1,34 +1,63 @@
 {
   "rules": {
-    "stores": {
-      ".read": true,
-      ".write": "auth != null && auth.token.admin == true"
+    "users": {
+      // Admins can read the entire users collection
+      ".read": "root.child('users').child(auth.uid).child('isAdmin').val() == true",
+      "$uid": {
+        ".read": "auth.uid == $uid || root.child('users').child(auth.uid).child('isAdmin').val() == true",
+        ".write": "auth.uid == $uid || root.child('users').child(auth.uid).child('isAdmin').val() == true"
+      }
     },
     "products": {
       ".read": true,
-      ".write": "auth != null && auth.token.admin == true"
+      ".write": "root.child('users').child(auth.uid).child('isAdmin').val() == true"
     },
-    "users": {
-      "$uid": {
-        ".read": "auth != null && auth.uid == $uid || auth.token.admin == true",
-        ".write": "auth != null && auth.uid == $uid || auth.token.admin == true"
-      }
+    "stores": {
+      ".read": true,
+      ".write": "root.child('users').child(auth.uid).child('isAdmin').val() == true"
+    },
+    "categories": {
+      ".read": true,
+      ".write": "root.child('users').child(auth.uid).child('isAdmin').val() == true"
     },
     "orders": {
+      ".read": "root.child('users').child(auth.uid).child('isAdmin').val() == true",
       "$orderId": {
-        ".read": "auth != null && (data.child('customerId').val() == auth.uid || auth.token.admin == true)",
-        ".write": "auth != null && (data.child('customerId').val() == auth.uid || auth.token.admin == true)"
+        ".read": "data.child('customerId').val() == auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() == true",
+        ".write": "data.child('customerId').val() == auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() == true"
       }
     },
     "captains": {
+      // Admins can read the entire captains collection
+      ".read": "root.child('users').child(auth.uid).child('isAdmin').val() == true",
+      ".write": "root.child('users').child(auth.uid).child('isAdmin').val() == true",
       "$captainId": {
-        ".read": "auth != null",
-        ".write": "auth != null && auth.uid == $captainId"
+        ".create": "auth.uid == $captainId",
+        ".read": "auth.uid == $captainId || root.child('users').child(auth.uid).child('isAdmin').val() == true",
+        ".update": "auth.uid == $captainId || root.child('users').child(auth.uid).child('isAdmin').val() == true"
+      }
+    },
+    "coupons": {
+      ".read": true,
+      ".write": "root.child('users').child(auth.uid).child('isAdmin').val() == true"
+    },
+    "promotions": {
+      ".read": true,
+      ".write": "root.child('users').child(auth.uid).child('isAdmin').val() == true"
+    },
+    "banners": {
+      ".read": true,
+      ".write": "root.child('users').child(auth.uid).child('isAdmin').val() == true"
+    },
+    "settings": {
+      "platform": {
+        ".read": true,
+        ".write": "root.child('users').child(auth.uid).child('isAdmin').val() == true"
       }
     },
     "analytics": {
-      ".read": "auth.token.admin == true",
-      ".write": "auth.token.admin == true"
+      ".read": "root.child('users').child(auth.uid).child('isAdmin').val() == true",
+      ".write": false
     }
   }
 }

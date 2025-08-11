@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 const JoinCaptain = () => {
   return (
-    <section className="bg-primary text-white">
+    <section className="bg-primary-dark text-white">
       <div className="container mx-auto px-6 py-20 text-center">
         <motion.h2
             initial={{ opacity: 0, y: -30 }}
@@ -29,10 +29,8 @@ const JoinCaptain = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.4 }}
         >
-            <Link href="/captain/signup">
-                <a className="bg-white text-primary text-lg font-semibold py-3 px-8 rounded-full hover:bg-gray-100 transition duration-300 transform hover:scale-105 inline-block">
+            <Link href="/captain/signup" className="bg-white text-primary-dark text-lg font-semibold py-3 px-8 rounded-full hover:bg-gray-100 transition duration-300 transform hover:scale-105 inline-block">
                 Register as a Captain
-                </a>
             </Link>
         </motion.div>
       </div>

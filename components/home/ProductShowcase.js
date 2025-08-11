@@ -8,9 +8,9 @@ import { motion } from 'framer-motion';
 
 const ProductShowcase = ({ products }) => {
   return (
-    <div className="bg-gray-50 py-20">
+    <div className="bg-gray-50 dark:bg-gray-800 py-20">
       <div className="container mx-auto px-6">
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">Featured Products</h2>
+        <h2 className="text-3xl font-bold text-center text-gray-800 dark:text-white mb-12">Featured Products</h2>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

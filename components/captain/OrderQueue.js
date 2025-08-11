@@ -1,5 +1,5 @@
 import React from 'react';
-import OrderCard from './OrderCard';
+import { OrderCard } from './OrderCard';
 
 const OrderQueue = ({ orders, loading, error }) => {
     if (loading) return <p>Loading available orders...</p>;

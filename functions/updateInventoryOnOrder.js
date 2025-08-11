@@ -1,18 +1,30 @@
-const functions = require('firebase-functions');
-const admin = require('firebase-admin');
+const { onDocumentCreated } = require("firebase-functions/v2/firestore");
+const { getFirestore } = require("firebase-admin/firestore");
+const { logger } = require("firebase-functions/v2");
 
-exports.updateInventoryOnOrder = functions.firestore
-    .document('orders/{orderId}')
-    .onCreate(async (snap, context) => {
-        const order = snap.data();
-        const batch = admin.firestore().batch();
+exports.updateinventoryonorder = onDocumentCreated("orders/{orderId}", (event) => {
+  logger.log("Updating inventory for order:", event.params.orderId);
 
-        order.items.forEach(item => {
-            const productRef = admin.firestore().collection('products').doc(item.id);
-            batch.update(productRef, {
-                stock: admin.firestore.FieldValue.increment(-item.quantity)
-            });
-        });
+  const orderData = event.data.data();
+  const items = orderData.items;
 
-        await batch.commit();
-    });
+  if (!items || !Array.isArray(items)) {
+    logger.log("No items found in order, skipping inventory update.");
+    return null;
+  }
+
+  const db = getFirestore();
+  const batch = db.batch();
+
+  items.forEach((item) => {
+    const productRef = db.collection("products").doc(item.id);
+    const decrement = item.quantity;
+    batch.update(productRef, { stock: FieldValue.increment(-decrement) });
+  });
+
+  return batch.commit().then(() => {
+    logger.log("Inventory updated successfully for order:", event.params.orderId);
+  }).catch((error) => {
+    logger.error("Error updating inventory:", error);
+  });
+});

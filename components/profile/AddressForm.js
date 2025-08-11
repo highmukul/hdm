@@ -1,107 +1,49 @@
-import { useState, useEffect, useRef } from 'react';
-import { useUserAddresses } from '../../hooks/useUserAddresses';
-import { useAuth } from '../../context/AuthContext';
-import { db } from '../../firebase/config';
-import { doc, setDoc } from 'firebase/firestore';
-import toast from 'react-hot-toast';
-import { useGoogleMaps } from '../../hooks/useGoogleMaps';
-import { Autocomplete } from '@react-google-maps/api';
+import { useState } from 'react';
 
-const AddressForm = ({ onSelectAddress }) => {
-    const { user } = useAuth();
-    const { addresses, loading } = useUserAddresses(user?.uid);
-    const { isLoaded } = useGoogleMaps();
-    const [selectedAddressId, setSelectedAddressId] = useState('');
-    const [isAddingNew, setIsAddingNew] = useState(false);
-    const [phone, setPhone] = useState('');
-    const autocompleteRef = useRef(null);
+const AddressForm = ({ address = {}, onSave, onCancel }) => {
+    const [formData, setFormData] = useState({
+        name: address.name || '',
+        addressLine1: address.addressLine1 || '',
+        addressLine2: address.addressLine2 || '',
+        city: address.city || '',
+        state: address.state || '',
+        pincode: address.pincode || '',
+        mobile: address.mobile || '',
+        isPrimary: address.isPrimary || false,
+    });
 
-    useEffect(() => {
-        if (addresses.length > 0 && !selectedAddressId) {
-            const firstAddress = addresses[0];
-            setSelectedAddressId(firstAddress.id);
-            onSelectAddress(firstAddress);
-        } else if (addresses.length === 0) {
-            setIsAddingNew(true);
-        }
-    }, [addresses, selectedAddressId, onSelectAddress]);
-    
-    const handleSelectAddress = (address) => {
-        setSelectedAddressId(address.id);
-        onSelectAddress(address);
-        setIsAddingNew(false);
-    };
-    
-    const handleSaveAddress = () => {
-        const place = autocompleteRef.current.getPlace();
-        if (!place || !place.geometry) {
-            toast.error("Please select a valid address from the dropdown.");
-            return;
-        }
-
-        const location = { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() };
-        const addressComponents = { street: place.name, fullAddress: place.formatted_address, city: '', state: '', zip: '' };
-        place.address_components.forEach(component => {
-            const types = component.types;
-            if (types.includes('locality')) addressComponents.city = component.long_name;
-            if (types.includes('administrative_area_level_1')) addressComponents.state = component.short_name;
-            if (types.includes('postal_code')) addressComponents.zip = component.long_name;
-        });
-        
-        saveNewAddress({ ...addressComponents, location, phone });
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     };
 
-    const saveNewAddress = async (addressData) => {
-        if (!user) return;
-        const addressId = Date.now().toString();
-        const newAddressRef = doc(db, 'users', user.uid, 'addresses', addressId);
-        try {
-            await setDoc(newAddressRef, { ...addressData, id: addressId });
-            toast.success('Address saved!');
-            setIsAddingNew(false);
-        } catch {
-            toast.error('Could not save address.');
-        }
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onSave(formData);
     };
-    
-    if (loading || !isLoaded) return <p className="text-text-secondary">Loading addresses...</p>;
 
     return (
-        <div>
-            {addresses.length > 0 && (
-                 <div className="space-y-4 mb-6">
-                    {addresses.map(address => (
-                        <div key={address.id} onClick={() => handleSelectAddress(address)} className={`p-4 border rounded-lg cursor-pointer ${selectedAddressId === address.id ? 'border-primary ring-2 ring-primary' : 'border-border'}`}>
-                            <p className="font-semibold text-text-primary">{address.street}</p>
-                            <p className="text-sm text-text-secondary">{address.fullAddress}</p>
-                        </div>
-                    ))}
-                </div>
-            )}
-            {isAddingNew ? (
-                <div className="mt-6 pt-6 border-t border-border">
-                    <h3 className="font-semibold mb-2 text-text-primary">Add a New Address</h3>
-                    <Autocomplete
-                        onLoad={(ref) => (autocompleteRef.current = ref)}
-                        onPlaceChanged={handleSaveAddress}
-                        options={{ componentRestrictions: { country: 'in' } }}
-                    >
-                        <input type="text" placeholder="Start typing your address..." className="input-field w-full" />
-                    </Autocomplete>
-                    <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone Number" className="input-field w-full mt-4" required/>
-                    <div className="flex justify-end space-x-4 mt-4">
-                        <button onClick={handleSaveAddress} className="btn-primary">Save Address</button>
-                        {addresses.length > 0 && <button type="button" onClick={() => setIsAddingNew(false)} className="py-2 px-4 bg-gray-200 dark:bg-gray-700 text-text-primary rounded-lg hover:opacity-90">Cancel</button>}
-                    </div>
-                </div>
-            ) : (
-                <div className="mt-6">
-                    <button onClick={() => setIsAddingNew(true)} className="w-full text-center py-3 px-4 text-sm font-medium rounded-md border-2 border-dashed border-border hover:bg-background transition-colors text-text-secondary">
-                        + Add a new address
-                    </button>
-                </div>
-            )}
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <input name="name" value={formData.name} onChange={handleChange} placeholder="Full Name" className="w-full p-2 border rounded" required />
+            <input name="addressLine1" value={formData.addressLine1} onChange={handleChange} placeholder="Address Line 1" className="w-full p-2 border rounded" required />
+            <input name="addressLine2" value={formData.addressLine2} onChange={handleChange} placeholder="Address Line 2" className="w-full p-2 border rounded" />
+            <div className="grid grid-cols-2 gap-4">
+                <input name="city" value={formData.city} onChange={handleChange} placeholder="City" className="p-2 border rounded" required />
+                <input name="state" value={formData.state} onChange={handleChange} placeholder="State" className="p-2 border rounded" required />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+                 <input name="pincode" value={formData.pincode} onChange={handleChange} placeholder="Pincode" className="p-2 border rounded" required />
+                 <input name="mobile" value={formData.mobile} onChange={handleChange} placeholder="Mobile Number" className="p-2 border rounded" required />
+            </div>
+            <div className="flex items-center">
+                <input type="checkbox" name="isPrimary" checked={formData.isPrimary} onChange={handleChange} id="isPrimary" className="h-4 w-4" />
+                <label htmlFor="isPrimary" className="ml-2">Set as primary address</label>
+            </div>
+            <div className="flex justify-end space-x-4">
+                <button type="button" onClick={onCancel} className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-600">Cancel</button>
+                <button type="submit" className="px-4 py-2 rounded bg-blue-600 text-white">Save Address</button>
+            </div>
+        </form>
     );
 };
 

@@ -1,48 +1,87 @@
-import React from 'react';
-import * as FiIcons from 'react-icons/fi';
+import { useState, useMemo } from 'react';
+import useAdminData from '../../hooks/useAdminData';
 
-const OrderTable = ({ orders, onSelectOrder, selectedOrderId }) => {
+const OrderTable = () => {
+    const { data: orders, loading, error } = useAdminData('orders');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sortConfig, setSortConfig] = useState({ key: 'orderId', direction: 'desc' });
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
+    const filteredOrders = useMemo(() => {
+        return orders.filter(order => 
+            order.orderId.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [orders, searchTerm]);
+    
+    const sortedOrders = useMemo(() => {
+        let sortableOrders = [...filteredOrders];
+        if (sortConfig.key) {
+            sortableOrders.sort((a, b) => {
+                const aValue = sortConfig.key === 'createdAt' ? a.createdAt.seconds : a[sortConfig.key];
+                const bValue = sortConfig.key === 'createdAt' ? b.createdAt.seconds : b[sortConfig.key];
+                
+                if (aValue < bValue) {
+                    return sortConfig.direction === 'asc' ? -1 : 1;
+                }
+                if (aValue > bValue) {
+                    return sortConfig.direction === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+        return sortableOrders;
+    }, [filteredOrders, sortConfig]);
+
+    const paginatedOrders = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return sortedOrders.slice(startIndex, startIndex + itemsPerPage);
+    }, [sortedOrders, currentPage]);
+
+     const requestSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    if (loading) return <p>Loading orders...</p>;
+    if (error) return <p className="text-red-500">{error}</p>;
+
     return (
-        <div className="bg-white p-6 rounded-2xl shadow-sm">
-            <h2 className="text-lg font-semibold mb-4">Recent Orders</h2>
-            <div className="overflow-x-auto">
-                <table className="w-full table-auto">
-                    <thead>
-                        <tr className="bg-gray-50">
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Order ID</th>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Customer</th>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Total</th>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                            <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg">
+             <input
+                type="text"
+                placeholder="Search by Order ID..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="mb-4 p-2 border rounded w-full dark:bg-gray-700"
+            />
+            <table className="w-full text-left">
+                <thead>
+                    <tr>
+                        <th onClick={() => requestSort('orderId')} className="cursor-pointer">Order ID</th>
+                        <th onClick={() => requestSort('createdAt')} className="cursor-pointer">Date</th>
+                        <th onClick={() => requestSort('total')} className="cursor-pointer">Amount</th>
+                        <th onClick={() => requestSort('status')} className="cursor-pointer">Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {paginatedOrders.map(order => (
+                        <tr key={order.id} className="border-b dark:border-gray-700">
+                            <td>{order.orderId}</td>
+                            <td>{new Date(order.createdAt.seconds * 1000).toLocaleDateString()}</td>
+                            <td>₹{order.total.toFixed(2)}</td>
+                            <td>{order.status}</td>
+                            <td>
+                                <button className="text-blue-500">View</button>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                        {orders.map(order => (
-                            <tr
-                                key={order.id}
-                                onClick={() => onSelectOrder(order)}
-                                className={`cursor-pointer hover:bg-gray-50 ${selectedOrderId === order.id ? 'bg-blue-50' : ''}`}
-                            >
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">#{order.id.substring(0, 6)}...</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{order.customerName || 'N/A'}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">₹{order.total.toFixed(2)}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                        order.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                                        order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                        'bg-red-100 text-red-800'
-                                    }`}>
-                                        {order.status}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-500">
-                                    {order.createdAt?.toDate().toLocaleDateString()}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                    ))}
+                </tbody>
+            </table>
         </div>
     );
 };

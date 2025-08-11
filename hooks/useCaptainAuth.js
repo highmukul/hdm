@@ -44,11 +44,11 @@ export const CaptainAuthProvider = ({ children }) => {
     const signInWithGoogle = async () => {
         const provider = new GoogleAuthProvider();
         try {
-            const result = await signInWithPopup(auth, provider);
-            await manageCaptain(result.user);
-            router.push('/captain/dashboard');
+            await signInWithPopup(auth, provider);
+            // The redirection logic is handled by the page component
         } catch (error) {
             toast.error("Captain sign-in failed.");
+            console.error("Google Sign-In Error:", error);
         }
     };
 

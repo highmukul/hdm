@@ -56,6 +56,10 @@ const ProductDetailPage = ({ initialProduct }) => {
         handleAddToCart();
         router.push('/checkout');
     };
+    
+    const discountPercentage = product.mrp > 0 && product.price < product.mrp
+    ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
+    : 0;
 
     return (
         <Layout>
@@ -64,7 +68,17 @@ const ProductDetailPage = ({ initialProduct }) => {
                     <ProductImageCarousel images={product.imageUrls} />
                     <div>
                         <h1 className="text-3xl font-bold text-gray-800 mb-2">{product.name}</h1>
-                        <p className="text-3xl font-extrabold text-gray-900 mb-4">₹{product.price.toFixed(2)}</p>
+                        <div className="flex items-center mb-4">
+                            <p className="text-3xl font-extrabold text-gray-900 mr-4">₹{product.price.toFixed(2)}</p>
+                            {discountPercentage > 0 && (
+                                <>
+                                    <p className="text-xl text-gray-500 line-through mr-4">₹{product.mrp.toFixed(2)}</p>
+                                    <div className="text-lg font-bold text-green-600 bg-green-100 px-3 py-1 rounded-full">
+                                        {discountPercentage}% OFF
+                                    </div>
+                                </>
+                            )}
+                        </div>
                         <p className="text-gray-600 mb-6">{product.description}</p>
                         <div className="flex items-center space-x-4 mb-6">
                             <label htmlFor="quantity" className="font-semibold">Quantity:</label>

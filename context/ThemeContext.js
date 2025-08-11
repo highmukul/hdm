@@ -1,29 +1,20 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect, useContext } from 'react';
 
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-    const [theme, setTheme] = useState('light');
+    const [theme, setTheme] = useState('light'); // Default theme
 
+    // On mount, read the theme from the body class and update our state
     useEffect(() => {
-        const storedTheme = window.localStorage.getItem('theme');
-        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        
-        if (storedTheme) {
-            setTheme(storedTheme);
-        } else if (systemPrefersDark) {
-            setTheme('dark');
-        } else {
-            setTheme('light');
-        }
+        setTheme(document.documentElement.classList.contains('dark') ? 'dark' : 'light');
     }, []);
 
     useEffect(() => {
-        const root = window.document.documentElement;
         if (theme === 'dark') {
-            root.classList.add('dark');
+            document.documentElement.classList.add('dark');
         } else {
-            root.classList.remove('dark');
+            document.documentElement.classList.remove('dark');
         }
         window.localStorage.setItem('theme', theme);
     }, [theme]);

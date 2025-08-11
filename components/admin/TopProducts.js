@@ -1,45 +1,22 @@
-import { useState, useEffect } from 'react';
-import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
-import { db } from '../../firebase/config';
-import { motion } from 'framer-motion';
-
-const TopProducts = () => {
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchTopProducts = async () => {
-            const productsRef = collection(db, 'products');
-            const q = query(productsRef, orderBy('sales', 'desc'), limit(5));
-            const querySnapshot = await getDocs(q);
-            setProducts(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-            setLoading(false);
-        };
-
-        fetchTopProducts();
-    }, []);
-
-    if (loading) {
-        return <div className="bg-white p-6 rounded-lg shadow-lg h-96 flex justify-center items-center">Loading...</div>;
-    }
-
+const TopProducts = ({ products }) => {
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="bg-white p-6 rounded-lg shadow-lg"
-        >
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Top Selling Products</h3>
-            <ul>
-                {products.map(product => (
-                    <li key={product.id} className="flex justify-between items-center py-2 border-b">
-                        <span>{product.name}</span>
-                        <span className="font-bold">{product.sales} units sold</span>
-                    </li>
-                ))}
-            </ul>
-        </motion.div>
+        <ul className="divide-y divide-gray-200">
+            {products.map(product => (
+                <li key={product.id} className="py-4 flex items-center justify-between">
+                    <div className="flex items-center">
+                        <img className="h-10 w-10 rounded-full object-cover" src={product.imageUrl} alt={product.name} />
+                        <div className="ml-3">
+                            <p className="text-sm font-medium text-gray-900">{product.name}</p>
+                            <p className="text-sm text-gray-500">{product.category}</p>
+                        </div>
+                    </div>
+                    <div className="text-right">
+                        <p className="text-sm font-medium text-gray-900">₹{product.price.toFixed(2)}</p>
+                        <p className="text-sm text-gray-500">{product.sales} sales</p>
+                    </div>
+                </li>
+            ))}
+        </ul>
     );
 };
 

@@ -1,76 +1,91 @@
-import { useState, useEffect } from 'react';
-import { db } from '../../firebase/config';
-import { collection, onSnapshot, query, where, orderBy, startAfter, limit } from 'firebase/firestore';
-import * as FiIcons from 'react-icons/fi';
+import { useState, useMemo } from 'react';
+import useAdminData from '../../hooks/useAdminData';
 
-const ProductTable = ({ onEdit, onDelete }) => {
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
+const ProductTable = () => {
+    const { data: products, loading, error } = useAdminData('products');
     const [searchTerm, setSearchTerm] = useState('');
+    const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
-    useEffect(() => {
-        const q = query(collection(db, 'products'), orderBy('name'));
-        const unsubscribe = onSnapshot(q, snapshot => {
-            setProducts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-            setLoading(false);
-        });
-        return unsubscribe;
-    }, []);
+    const filteredProducts = useMemo(() => {
+        return products.filter(product => 
+            product.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [products, searchTerm]);
 
-    const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    const sortedProducts = useMemo(() => {
+        let sortableProducts = [...filteredProducts];
+        if (sortConfig.key) {
+            sortableProducts.sort((a, b) => {
+                if (a[sortConfig.key] < b[sortConfig.key]) {
+                    return sortConfig.direction === 'asc' ? -1 : 1;
+                }
+                if (a[sortConfig.key] > b[sortConfig.key]) {
+                    return sortConfig.direction === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+        return sortableProducts;
+    }, [filteredProducts, sortConfig]);
+    
+    const paginatedProducts = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return sortedProducts.slice(startIndex, startIndex + itemsPerPage);
+    }, [sortedProducts, currentPage]);
+    
+    const requestSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
 
-    if (loading) return <div>Loading products...</div>;
+    const calculateDiscount = (mrp, salePrice) => {
+        if (!mrp || !salePrice) return 0;
+        return Math.round(((mrp - salePrice) / mrp) * 100);
+    };
+
+    if (loading) return <p>Loading products...</p>;
+    if (error) return <p className="text-red-500">{error}</p>;
 
     return (
-        <div className="bg-white p-6 rounded-2xl shadow-sm">
-            <div className="mb-4">
-                <div className="relative">
-                    <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                        <FiIcons.FiSearch className="text-gray-400" />
-                    </span>
-                    <input
-                        type="text"
-                        placeholder="Search products..."
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border rounded-lg"
-                    />
-                </div>
-            </div>
-            <div className="overflow-x-auto">
-                <table className="w-full table-auto">
-                    <thead>
-                        <tr className="bg-gray-50">
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Product</th>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Price</th>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Stock</th>
-                            <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+        <div className="bg-white p-6 rounded-lg shadow-md">
+             <input
+                type="text"
+                placeholder="Search by name..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="mb-4 p-2 border rounded w-full"
+            />
+            <table className="w-full text-left">
+                <thead>
+                    <tr className="border-b">
+                        <th onClick={() => requestSort('name')} className="cursor-pointer p-2">Name</th>
+                        <th onClick={() => requestSort('mrp')} className="cursor-pointer p-2">MRP</th>
+                        <th onClick={() => requestSort('salePrice')} className="cursor-pointer p-2">Sale Price</th>
+                        <th className="p-2">Discount</th>
+                        <th onClick={() => requestSort('stock')} className="cursor-pointer p-2">Stock</th>
+                        <th className="p-2">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {paginatedProducts.map(product => (
+                        <tr key={product.id} className="border-b">
+                            <td className="p-2">{product.name}</td>
+                            <td className="p-2">₹{product.mrp?.toFixed(2)}</td>
+                            <td className="p-2">₹{product.salePrice?.toFixed(2)}</td>
+                            <td className="p-2">{calculateDiscount(product.mrp, product.salePrice)}%</td>
+                            <td className="p-2">{product.stock}</td>
+                            <td className="p-2">
+                                <button className="text-blue-500">Edit</button>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                        {filteredProducts.map(product => (
-                            <tr key={product.id} className="hover:bg-gray-50">
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="flex items-center">
-                                        <div className="flex-shrink-0 h-10 w-10">
-                                            <img className="h-10 w-10 rounded-full object-cover" src={product.imageUrls?.[0] || 'https://via.placeholder.com/150'} alt={product.name} />
-                                        </div>
-                                        <div className="ml-4">
-                                            <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">₹{product.price}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.stock}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button onClick={() => onEdit(product)} className="text-blue-600 hover:text-blue-800 mr-4"><FiIcons.FiEdit /></button>
-                                    <button onClick={() => onDelete(product.id)} className="text-red-600 hover:text-red-800"><FiIcons.FiTrash2 /></button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                    ))}
+                </tbody>
+            </table>
         </div>
     );
 };

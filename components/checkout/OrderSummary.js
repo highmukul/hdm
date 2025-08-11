@@ -11,6 +11,10 @@ const OrderSummary = () => {
     const subtotal = cartTotal;
     const tax = subtotal * taxRate;
     const total = subtotal + tax + deliveryFee + platformFee;
+    
+    const totalMRP = cartItems.reduce((total, item) => total + (item.mrp || item.price) * item.quantity, 0);
+    const totalDiscount = totalMRP - subtotal;
+
 
     return (
         <div className="bg-white rounded-2xl shadow-sm p-6">
@@ -18,8 +22,12 @@ const OrderSummary = () => {
             
             <div className="space-y-3">
                 <div className="flex justify-between text-gray-600">
-                    <span>Subtotal ({cartItems.length} items)</span>
-                    <span className="font-medium">₹{subtotal.toFixed(2)}</span>
+                    <span>Price ({cartItems.length} items)</span>
+                    <span className="font-medium">₹{totalMRP.toFixed(2)}</span>
+                </div>
+                 <div className="flex justify-between text-green-600">
+                    <span>Discount</span>
+                    <span className="font-medium">- ₹{totalDiscount.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                     <span>Platform Fee</span>

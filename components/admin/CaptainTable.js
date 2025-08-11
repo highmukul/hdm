@@ -1,39 +1,87 @@
-import React from 'react';
-import * as FaIcons from 'react-icons/fa';
+import { useState, useMemo } from 'react';
+import useAdminData from '../../hooks/useAdminData';
+import Link from 'next/link';
 
-const CaptainTable = ({ captains, onApprove, onReject }) => {
+const CaptainTable = () => {
+    const { data: captains, loading, error } = useAdminData('captains');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sortConfig, setSortConfig] = useState({ key: 'fullName', direction: 'asc' });
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+    
+    const filteredCaptains = useMemo(() => {
+        return captains.filter(captain => 
+            captain.fullName?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [captains, searchTerm]);
+
+    const sortedCaptains = useMemo(() => {
+        let sortableCaptains = [...filteredCaptains];
+        if (sortConfig.key) {
+            sortableCaptains.sort((a, b) => {
+                if (a[sortConfig.key] < b[sortConfig.key]) {
+                    return sortConfig.direction === 'asc' ? -1 : 1;
+                }
+                if (a[sortConfig.key] > b[sortConfig.key]) {
+                    return sortConfig.direction === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+        return sortableCaptains;
+    }, [filteredCaptains, sortConfig]);
+    
+    const paginatedCaptains = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return sortedCaptains.slice(startIndex, startIndex + itemsPerPage);
+    }, [sortedCaptains, currentPage]);
+
+    const requestSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    if (loading) return <p>Loading captains...</p>;
+    if (error) return <p className="text-red-500">{error.message}</p>;
+
     return (
-        <div className="bg-white shadow-md rounded-lg overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                    <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+        <div className="bg-white p-6 rounded-lg shadow-md">
+             <input
+                type="text"
+                placeholder="Search by name..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="mb-4 p-2 border rounded w-full"
+            />
+            <table className="w-full text-left">
+                <thead>
+                    <tr className="border-b">
+                        <th onClick={() => requestSort('fullName')} className="cursor-pointer p-2">Name</th>
+                        <th onClick={() => requestSort('status')} className="cursor-pointer p-2">Status</th>
+                        <th onClick={() => requestSort('totalEarnings')} className="cursor-pointer p-2">Total Earned</th>
+                        <th className="p-2">Actions</th>
                     </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                    {captains.map(captain => (
-                        <tr key={captain.id}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{captain.name}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{captain.email}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                <tbody>
+                    {paginatedCaptains.map(captain => (
+                        <tr key={captain.id} className="border-b">
+                            <td className="p-2">{captain.fullName}</td>
+                            <td className="p-2">
+                                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                                     captain.status === 'approved' ? 'bg-green-100 text-green-800' :
-                                    captain.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                    'bg-red-100 text-red-800'
+                                    captain.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
                                 }`}>
                                     {captain.status}
                                 </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                {captain.status === 'pending' && (
-                                    <>
-                                        <button onClick={() => onApprove(captain.id)} className="text-green-600 hover:text-green-900 mr-3"><FaIcons.FaCheck /></button>
-                                        <button onClick={() => onReject(captain.id)} className="text-red-600 hover:text-red-900"><FaIcons.FaTimes /></button>
-                                    </>
-                                )}
+                            <td className="p-2">₹{captain.totalEarnings?.toFixed(2) || 0}</td>
+                            <td className="p-2">
+                                <Link href={`/admin/captains/${captain.id}`} legacyBehavior>
+                                    <a className="text-indigo-600 hover:underline">Review</a>
+                                </Link>
                             </td>
                         </tr>
                     ))}

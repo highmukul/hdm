@@ -1,74 +1,138 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useForm } from 'react-hook-form';
-import { db, storage } from '../../firebase/config';
-import { doc, updateDoc } from 'firebase/firestore';
-import { ref, uploadString, getDownloadURL } from 'firebase/storage';
+import { db, auth } from '../../firebase/config';
+import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import toast from 'react-hot-toast';
-import * as FiIcons from 'react-icons/fi';
 
 const UserProfile = () => {
     const { user } = useAuth();
-    const { register, handleSubmit, formState: { errors } } = useForm({
-        defaultValues: {
-            name: user?.name || '',
-            phone: user?.phone || '',
-        }
-    });
-    const [isEditing, setIsEditing] = useState(false);
-    const [photo, setPhoto] = useState(null);
+    const [displayName, setDisplayName] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [otp, setOtp] = useState('');
+    const [confirmationResult, setConfirmationResult] = useState(null);
+    const [otpSent, setOtpSent] = useState(false);
 
-    const onSubmit = async (data) => {
-        let photoURL = user.photoURL;
-        if (photo) {
-            const photoRef = ref(storage, `users/${user.uid}/profile.jpg`);
-            await uploadString(photoRef, photo, 'data_url');
-            photoURL = await getDownloadURL(photoRef);
+    useEffect(() => {
+        if (user) {
+            const userRef = doc(db, 'users', user.uid);
+            getDoc(userRef).then(docSnap => {
+                if (docSnap.exists()) {
+                    const userData = docSnap.data();
+                    setDisplayName(userData.displayName || '');
+                    setPhoneNumber(userData.phoneNumber || '');
+                }
+            });
         }
+    }, [user]);
 
-        const userRef = doc(db, 'users', user.uid);
-        await updateDoc(userRef, { ...data, photoURL });
-        toast.success('Profile updated!');
-        setIsEditing(false);
+    const generateRecaptcha = () => {
+        if (!window.recaptchaVerifier) {
+            window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                'size': 'invisible',
+                'callback': (response) => {
+                    // reCAPTCHA solved, allow signInWithPhoneNumber.
+                }
+            });
+        }
     };
 
-    return (
-        <div>
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">My Profile</h2>
-                <button onClick={() => setIsEditing(!isEditing)} className="btn-secondary">
-                    {isEditing ? 'Cancel' : 'Edit Profile'}
-                </button>
-            </div>
+    const handleSendOtp = (e) => {
+        e.preventDefault();
+        generateRecaptcha();
+        const appVerifier = window.recaptchaVerifier;
+        signInWithPhoneNumber(auth, `+${phoneNumber}`, appVerifier)
+            .then(confirmation => {
+                setConfirmationResult(confirmation);
+                setOtpSent(true);
+                toast.success('OTP sent successfully!');
+            }).catch(error => {
+                console.error("SMS not sent", error);
+                toast.error('Failed to send OTP. Make sure the phone number is correct.');
+            });
+    };
 
-            {isEditing ? (
-                <form onSubmit={handleSubmit(onSubmit)}>
-                    <input type="file" onChange={(e) => {
-                        const reader = new FileReader();
-                        reader.onload = (e) => setPhoto(e.target.result);
-                        reader.readAsDataURL(e.target.files[0]);
-                    }} />
-                    <input {...register('name')} placeholder="Name" />
-                    <input {...register('phone')} placeholder="Phone" />
-                    <button type="submit" className="btn-primary">Save Changes</button>
-                </form>
-            ) : (
-                <div className="space-y-4">
-                    <img src={user?.photoURL || '/placeholder.png'} alt="Profile" className="w-24 h-24 rounded-full" />
-                    <div className="flex items-center">
-                        <FiIcons.FiUser className="text-gray-400 mr-4" />
-                        <span>{user?.name || 'N/A'}</span>
-                    </div>
-                    <div className="flex items-center">
-                        <FiIcons.FiMail className="text-gray-400 mr-4" />
-                        <span>{user?.email || 'N/A'}</span>
-                    </div>
-                    <div className="flex items-center">
-                        <FiIcons.FiPhone className="text-gray-400 mr-4" />
-                        <span>{user?.phone || 'Not provided'}</span>
-                    </div>
+    const handleVerifyOtp = async (e) => {
+        e.preventDefault();
+        if (confirmationResult) {
+            try {
+                await confirmationResult.confirm(otp);
+                const userRef = doc(db, 'users', user.uid);
+                await updateDoc(userRef, { phoneNumber });
+                toast.success('Phone number verified and updated!');
+                setOtpSent(false);
+            } catch (error) {
+                 toast.error('Invalid OTP. Please try again.');
+            }
+        }
+    };
+    
+    const handleProfileUpdate = async (e) => {
+         e.preventDefault();
+        if (user) {
+            const userRef = doc(db, 'users', user.uid);
+            try {
+                await updateDoc(userRef, { displayName });
+                toast.success('Display name updated successfully!');
+            } catch (error) {
+                toast.error('Failed to update display name.');
+            }
+        }
+    }
+
+    return (
+        <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Your Profile</h2>
+            <form onSubmit={handleProfileUpdate} className="space-y-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                <div>
+                    <label className="block mb-2">Email Address</label>
+                    <input type="email" value={user?.email || ''} disabled className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-700" />
                 </div>
-            )}
+                 <div>
+                    <label className="block mb-2">Display Name</label>
+                    <input 
+                        type="text"
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        className="w-full p-2 border rounded"
+                    />
+                </div>
+                <button type="submit" className="px-4 py-2 rounded bg-blue-600 text-white">Update Name</button>
+            </form>
+
+             <div className="space-y-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                <h3 className="text-xl font-bold">Verify Phone Number</h3>
+                {!otpSent ? (
+                     <form onSubmit={handleSendOtp} className="flex items-end space-x-2">
+                        <div className="flex-grow">
+                             <label className="block mb-2">Phone Number (e.g., 919876543210)</label>
+                             <input
+                                type="tel"
+                                value={phoneNumber}
+                                onChange={(e) => setPhoneNumber(e.target.value)}
+                                className="w-full p-2 border rounded"
+                                placeholder="919876543210"
+                            />
+                        </div>
+                        <button type="submit" className="px-4 py-2 rounded bg-green-600 text-white">Send OTP</button>
+                    </form>
+                ) : (
+                    <form onSubmit={handleVerifyOtp} className="flex items-end space-x-2">
+                         <div className="flex-grow">
+                            <label className="block mb-2">Enter OTP</label>
+                            <input
+                                type="text"
+                                value={otp}
+                                onChange={(e) => setOtp(e.target.value)}
+                                className="w-full p-2 border rounded"
+                                placeholder="123456"
+                            />
+                        </div>
+                        <button type="submit" className="px-4 py-2 rounded bg-green-600 text-white">Verify OTP</button>
+                    </form>
+                )}
+            </div>
+            <div id="recaptcha-container"></div>
         </div>
     );
 };

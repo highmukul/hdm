@@ -1,38 +1,42 @@
-import { Pie } from 'react-chartjs-2';
+import { Doughnut } from 'react-chartjs-2';
+import useAdminStats from '../../hooks/useAdminStats';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const UserDistributionChart = ({ users }) => {
+const UserDistributionChart = () => {
+    const { stats, loading, error } = useAdminStats();
+
     const data = {
-        labels: ['Customers', 'Captains', 'Admins'],
+        labels: ['Admin', 'Captain', 'Customer'],
         datasets: [
             {
-                label: 'User Roles',
-                data: [
-                    users.filter(u => u.role === 'customer').length,
-                    users.filter(u => u.role === 'captain').length,
-                    users.filter(u => u.role === 'admin').length,
-                ],
-                backgroundColor: [
-                    'rgba(54, 162, 235, 0.2)',
-                    'rgba(255, 99, 132, 0.2)',
-                    'rgba(75, 192, 192, 0.2)',
-                ],
-                borderColor: [
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(75, 192, 192, 1)',
-                ],
-                borderWidth: 1,
+                data: [stats.userRoles?.admin, stats.userRoles?.captain, stats.userRoles?.customer],
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+                hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
             },
         ],
     };
+    
+    const options = {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'right',
+            },
+            title: {
+                display: true,
+                text: 'User Role Distribution',
+            },
+        },
+    };
+    
+    if (loading) return <p>Loading chart...</p>;
+    if (error) return null;
 
     return (
-        <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h2 className="text-lg font-semibold mb-4">User Distribution</h2>
-            <Pie data={data} />
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg">
+            <Doughnut data={data} options={options} />
         </div>
     );
 };

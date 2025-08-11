@@ -1,22 +1,39 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class', // or 'media'
   content: [
-    "./pages/**/*.{js,ts,jsx,tsx}",
-    "./components/**/*.{js,ts,jsx,tsx}",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    './pages/**/*.{js,ts,jsx,tsx}',
+    './components/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
     extend: {
       colors: {
-        primary: 'var(--primary-color)',
-        'primary-hover': 'var(--primary-color-hover)',
-        background: 'var(--background-color)',
-        'card-background': 'var(--card-background)',
-        'text-primary': 'var(--text-primary)',
-        'text-secondary': 'var(--text-secondary)',
-        'border-color': 'var(--border-color)',
+        primary: {
+          light: '#4F46E5',
+          DEFAULT: '#4338CA',
+          dark: '#3730A3',
+        },
+        secondary: '#10B981',
+        background: {
+          light: '#F9FAFB',
+          dark: '#111827',
+        },
+        surface: {
+          light: '#FFFFFF',
+          dark: '#1F2937',
+        },
+        on: {
+          background: {
+            light: '#1F2937',
+            dark: '#F9FAFB',
+          },
+          surface: {
+            light: '#111827',
+            dark: '#FFFFFF',
+          }
+        }
       },
     },
   },
   plugins: [],
-};
+}

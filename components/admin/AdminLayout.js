@@ -26,11 +26,13 @@ const AdminLayout = ({ children }) => {
     { name: 'Captains', icon: <FaIcons.FaUserShield />, href: '/admin/captains' },
     { name: 'Payouts', icon: <FaIcons.FaMoneyBillWave />, href: '/admin/payouts' },
     { name: 'Settings', icon: <FaIcons.FaCog />, href: '/admin/settings' },
+    { name: 'Coupons', icon: <FaIcons.FaTicketAlt />, href: '/admin/coupons' },
+    { name: 'Promotions', icon: <FaIcons.FaBullhorn />, href: '/admin/promotions' },
   ];
 
   const SidebarContent = () => (
     <>
-      <div className="h-20 flex items-center justify-center text-2xl font-bold text-white border-b border-gray-800">
+      <div className="h-20 flex items-center justify-center text-2xl font-bold text-black border-b border-gray-200">
         Admin
       </div>
       <nav className="flex-1 px-4 py-8">
@@ -38,7 +40,7 @@ const AdminLayout = ({ children }) => {
           {adminNavLinks.map(link => (
             <li key={link.name} className="mb-2">
               <Link href={link.href} legacyBehavior>
-                <a className={`flex items-center p-3 rounded-lg transition-colors ${router.pathname === link.href ? 'bg-indigo-600 text-white' : 'hover:bg-gray-800'}`}>
+                <a className={`flex items-center p-3 rounded-lg transition-colors ${router.pathname === link.href ? 'bg-gray-200 text-black' : 'hover:bg-gray-100'}`}>
                   <span className="mr-4 text-lg">{link.icon}</span>
                   {link.name}
                 </a>
@@ -47,8 +49,8 @@ const AdminLayout = ({ children }) => {
           ))}
         </ul>
       </nav >
-      <div className="p-4 border-t border-gray-800">
-        <button onClick={logout} className="w-full flex items-center p-3 rounded-lg text-left hover:bg-red-800 transition-colors">
+      <div className="p-4 border-t border-gray-200">
+        <button onClick={logout} className="w-full flex items-center p-3 rounded-lg text-left hover:bg-red-100 transition-colors">
           <FaIcons.FaSignOutAlt className="mr-4" /> Logout
         </button>
       </div>
@@ -65,11 +67,11 @@ const AdminLayout = ({ children }) => {
 
   return (
     <div className="flex h-screen bg-gray-50 font-sans">
-      <div className={`fixed inset-0 bg-gray-900 text-gray-200 flex flex-col z-50 transition-transform transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:hidden`}>
+      <div className={`fixed inset-0 bg-white flex flex-col z-50 transition-transform transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:hidden`}>
         <SidebarContent />
       </div>
 
-      <aside className="w-64 bg-gray-900 text-gray-200 flex-col hidden md:flex">
+      <aside className="w-64 bg-white flex-col hidden md:flex border-r border-gray-200">
         <SidebarContent />
       </aside>
 

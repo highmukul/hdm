@@ -1,31 +1,85 @@
-import * as FaIcons from 'react-icons/fa';
+import { useState, useMemo } from 'react';
+import useAdminData from '../../hooks/useAdminData';
+import { UserEditModal } from './UserEditModal';
 
-const UserTable = ({ users, onEdit, onDelete }) => {
+const UserTable = () => {
+    const { data: users, loading, error } = useAdminData('users');
+    const [editingUser, setEditingUser] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sortConfig, setSortConfig] = useState({ key: 'email', direction: 'asc' });
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
+    const filteredUsers = useMemo(() => {
+        return users.filter(user => 
+            user.email.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [users, searchTerm]);
+
+    const sortedUsers = useMemo(() => {
+        let sortableUsers = [...filteredUsers];
+        if (sortConfig.key) {
+            sortableUsers.sort((a, b) => {
+                if (a[sortConfig.key] < b[sortConfig.key]) {
+                    return sortConfig.direction === 'asc' ? -1 : 1;
+                }
+                if (a[sortConfig.key] > b[sortConfig.key]) {
+                    return sortConfig.direction === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+        return sortableUsers;
+    }, [filteredUsers, sortConfig]);
+    
+    const paginatedUsers = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return sortedUsers.slice(startIndex, startIndex + itemsPerPage);
+    }, [sortedUsers, currentPage]);
+
+    const requestSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    if (loading) return <p>Loading users...</p>;
+    if (error) return <p className="text-red-500">{error}</p>;
+
     return (
-        <div className="bg-white shadow-md rounded-lg overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg">
+             <input
+                type="text"
+                placeholder="Search by email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="mb-4 p-2 border rounded w-full dark:bg-gray-700"
+            />
+            <table className="w-full text-left">
+                <thead>
                     <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th onClick={() => requestSort('email')} className="cursor-pointer">Email</th>
+                        <th onClick={() => requestSort('roles')} className="cursor-pointer">Roles</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                    {users.map(user => (
-                        <tr key={user.id}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.role}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <button onClick={() => onEdit(user)} className="text-indigo-600 hover:text-indigo-900 mr-3"><FaIcons.FaEdit /></button>
-                                <button onClick={() => onDelete(user.id)} className="text-red-600 hover:text-red-900"><FaIcons.FaTrash /></button>
+                <tbody>
+                    {paginatedUsers.map(user => (
+                        <tr key={user.id} className="border-b dark:border-gray-700">
+                            <td>{user.email}</td>
+                            <td>{user.roles?.join(', ') || 'N/A'}</td>
+                            <td>
+                                <button onClick={() => setEditingUser(user)} className="text-blue-500">Edit</button>
                             </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
+             {/* Pagination controls here */}
+
+            {editingUser && <UserEditModal user={editingUser} onClose={() => setEditingUser(null)} />}
         </div>
     );
 };

@@ -3,7 +3,7 @@ import * as FaIcons from 'react-icons/fa';
 
 const Footer = () => {
     return (
-        <footer className="bg-gray-800 text-white">
+        <footer className="bg-gray-800 dark:bg-gray-900 text-white">
             <div className="container mx-auto px-6 py-8">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <div>
@@ -13,9 +13,9 @@ const Footer = () => {
                     <div>
                         <h3 className="font-bold mb-4">Quick Links</h3>
                         <ul>
-                            <li><Link href="/about" legacyBehavior><a className="text-gray-400 hover:text-white">About Us</a></Link></li>
-                            <li><Link href="/contact" legacyBehavior><a className="text-gray-400 hover:text-white">Contact</a></Link></li>
-                            <li><Link href="/faq" legacyBehavior><a className="text-gray-400 hover:text-white">FAQ</a></Link></li>
+                            <li><Link href="/about" className="text-gray-400 hover:text-white">About Us</Link></li>
+                            <li><Link href="/contact" className="text-gray-400 hover:text-white">Contact</Link></li>
+                            <li><Link href="/faq" className="text-gray-400 hover:text-white">FAQ</Link></li>
                         </ul>
                     </div>
                     <div>

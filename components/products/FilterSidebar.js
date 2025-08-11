@@ -1,77 +1,72 @@
 import { useState, useEffect } from 'react';
+import { db } from '../../firebase/config';
+import { collection, getDocs } from 'firebase/firestore';
 
-const categories = [
-  'All', 
-  'Vegetables & Fruits', 
-  'Dairy & Breakfast', 
-  'Munchies', 
-  'Cold Drinks & Juices',
-  'Instant & Frozen Food',
-  'Tea, Coffee & Health Drinks',
-  'Bakery & Biscuits'
-];
+const FilterSidebar = ({ filters, setFilters }) => {
+    const [categories, setCategories] = useState([]);
+    
+    useEffect(() => {
+        const fetchCategories = async () => {
+            const snapshot = await getDocs(collection(db, 'categories'));
+            setCategories(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        };
+        fetchCategories();
+    }, []);
 
-const sortOptions = [
-  { value: 'name_asc', label: 'Alphabetical (A-Z)' },
-  { value: 'name_desc', label: 'Alphabetical (Z-A)' },
-  { value: 'price_asc', label: 'Price: Low to High' },
-  { value: 'price_desc', label: 'Price: High to Low' },
-];
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        setFilters(prev => ({ ...prev, [name]: value }));
+    };
 
-const FilterSidebar = ({ filters, onFilterChange }) => {
-  const [internalFilters, setInternalFilters] = useState(filters);
+    return (
+        <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl shadow-sm sticky top-28">
+            <h3 className="text-xl font-bold mb-4 text-on-surface-light dark:text-on-surface-dark">Filters</h3>
+            
+            <div className="mb-6">
+                <label htmlFor="search" className="font-semibold block mb-2 text-on-surface-light dark:text-on-surface-dark">Search</label>
+                <input
+                    type="text"
+                    id="search"
+                    name="search"
+                    value={filters.search}
+                    onChange={handleFilterChange}
+                    className="w-full px-3 py-2 border rounded-md bg-background-light dark:bg-background-dark text-on-background-light dark:text-on-background-dark"
+                    placeholder="Search products..."
+                />
+            </div>
 
-  useEffect(() => {
-    onFilterChange(internalFilters);
-  }, [internalFilters, onFilterChange]);
+            <div className="mb-6">
+                <label htmlFor="category" className="font-semibold block mb-2 text-on-surface-light dark:text-on-surface-dark">Category</label>
+                <select
+                    id="category"
+                    name="category"
+                    value={filters.category}
+                    onChange={handleFilterChange}
+                    className="w-full px-3 py-2 border rounded-md bg-background-light dark:bg-background-dark text-on-background-light dark:text-on-background-dark"
+                >
+                    <option value="">All Categories</option>
+                    {categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                </select>
+            </div>
 
-  const handleCategoryChange = (category) => {
-    setInternalFilters(prev => ({ ...prev, category }));
-  };
-
-  const handleSortChange = (e) => {
-    setInternalFilters(prev => ({ ...prev, sortBy: e.target.value }));
-  };
-
-  return (
-    <div className="space-y-8">
-      {/* Category Filter */}
-      <div>
-        <h4 className="font-semibold mb-4 text-gray-800">Category</h4>
-        <div className="space-y-3">
-          {categories.map(cat => (
-            <button
-              key={cat}
-              onClick={() => handleCategoryChange(cat)}
-              className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                internalFilters.category === cat
-                  ? 'bg-green-100 text-green-700 font-semibold'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+            <div>
+                <label htmlFor="sortBy" className="font-semibold block mb-2 text-on-surface-light dark:text-on-surface-dark">Sort By</label>
+                <select
+                    id="sortBy"
+                    name="sortBy"
+                    value={filters.sortBy}
+                    onChange={handleFilterChange}
+                    className="w-full px-3 py-2 border rounded-md bg-background-light dark:bg-background-dark text-on-background-light dark:text-on-background-dark"
+                >
+                    <option value="createdAt-desc">Newest</option>
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                </select>
+            </div>
         </div>
-      </div>
-
-      {/* Sort By */}
-      <div>
-        <h4 className="font-semibold mb-4 text-gray-800">Sort By</h4>
-        <select
-          value={internalFilters.sortBy}
-          onChange={handleSortChange}
-          className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-green-500 focus:outline-none"
-        >
-          {sortOptions.map(option => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default FilterSidebar;

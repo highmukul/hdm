@@ -1,37 +1,25 @@
-import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { db } from '../../firebase/config';
 import { collection, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
-import Uploader from '../common/Uploader';
 
 const PromotionForm = ({ promotion, onSave, onCancel }) => {
-    const { register, handleSubmit, reset, setValue } = useForm();
-    const [imageUrl, setImageUrl] = useState('');
-
-    useEffect(() => {
-        if (promotion) {
-            reset({ ...promotion });
-            setImageUrl(promotion.imageUrl || '');
+    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
+        defaultValues: {
+            title: promotion?.title || '',
+            description: promotion?.description || '',
+            discount: promotion?.discount || '',
         }
-    }, [promotion, reset]);
-
-    const handleUploadComplete = (urls) => {
-        if (urls.length > 0) {
-            setImageUrl(urls[0]);
-            setValue('imageUrl', urls[0]);
-            toast.success("Image ready to be saved with the promotion.");
-        }
-    };
+    });
 
     const onSubmit = async (data) => {
         const toastId = toast.loading(promotion ? 'Updating promotion...' : 'Creating promotion...');
-
+        
         try {
             const promotionData = {
                 ...data,
-                imageUrl,
+                discount: Number(data.discount),
                 updatedAt: serverTimestamp(),
             };
 
@@ -41,38 +29,62 @@ const PromotionForm = ({ promotion, onSave, onCancel }) => {
                 promotionData.createdAt = serverTimestamp();
                 await addDoc(collection(db, 'promotions'), promotionData);
             }
-            
-            toast.success(`Promotion ${promotion ? 'updated' : 'created'}!`, { id: toastId });
+
+            toast.success(`Promotion ${promotion ? 'updated' : 'created'} successfully!`, { id: toastId });
             onSave();
         } catch (error) {
-            toast.error('Failed to save promotion.', { id: toastId });
+            toast.error(`Error: ${error.message}`, { id: toastId });
         }
     };
 
     return (
-        <motion.div 
+        <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
         >
             <div className="bg-white rounded-lg shadow-xl p-8 max-w-lg w-full">
-                <h2 className="text-xl font-bold mb-6">{promotion ? 'Edit Promotion' : 'Create Promotion'}</h2>
-                <form onSubmit={handleSubmit(onSubmit)}>
-                    <input {...register("title", { required: true })} placeholder="Title" className="input w-full mb-4" />
-                    <input {...register("link")} placeholder="Link (e.g., /products/some-product)" className="input w-full mb-4" />
-                    
-                    <h3 className="font-semibold mb-2">Upload Image</h3>
-                    <Uploader onUploadComplete={handleUploadComplete} />
-
-                    {imageUrl && (
-                        <div className="mt-4">
-                            <img src={imageUrl} alt="Promotion preview" className="w-full h-auto rounded-md" />
+                <h2 className="text-xl font-bold mb-6">{promotion ? 'Edit Promotion' : 'Create New Promotion'}</h2>
+                <form onSubmit={handleSubmit(onSubmit)} noValidate>
+                    <div className="space-y-4">
+                        <div>
+                            <label htmlFor="title" className="block text-sm font-medium text-gray-700">Title</label>
+                            <input
+                                id="title"
+                                type="text"
+                                {...register('title', { required: 'Title is required' })}
+                                className={`input ${errors.title ? 'border-red-500' : ''}`}
+                            />
+                            {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>}
                         </div>
-                    )}
+
+                        <div>
+                            <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
+                            <textarea
+                                id="description"
+                                {...register('description', { required: 'Description is required' })}
+                                className={`input w-full h-24 ${errors.description ? 'border-red-500' : ''}`}
+                            />
+                            {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>}
+                        </div>
+
+                        <div>
+                            <label htmlFor="discount" className="block text-sm font-medium text-gray-700">Discount (%)</label>
+                            <input
+                                id="discount"
+                                type="number"
+                                {...register('discount', { required: 'Discount is required', min: { value: 1, message: 'Discount must be positive' } })}
+                                className={`input ${errors.discount ? 'border-red-500' : ''}`}
+                            />
+                            {errors.discount && <p className="text-red-500 text-xs mt-1">{errors.discount.message}</p>}
+                        </div>
+                    </div>
 
                     <div className="flex justify-end mt-8">
                         <button type="button" onClick={onCancel} className="btn-secondary mr-4">Cancel</button>
-                        <button type="submit" className="btn-primary">Save Promotion</button>
+                        <button type="submit" className="btn-primary" disabled={isSubmitting}>
+                            {isSubmitting ? 'Saving...' : 'Save Promotion'}
+                        </button>
                     </div>
                 </form>
             </div>
