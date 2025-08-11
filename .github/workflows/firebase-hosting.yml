@@ -1,4 +1,4 @@
-name: Firebase Hosting CI
+name: Firebase App Hosting CI
 
 on:
   push:
@@ -24,22 +24,19 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Deploy to Firebase Hosting
-        uses: FirebaseExtended/action-hosting-deploy@v0
+      - name: Deploy to Firebase App Hosting
+        uses: FirebaseExtended/firebase-app-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HADOTI_DAILY_MART_467808 }}'
-          channelId: live
           projectId: hadoti-daily-mart-467808
-          target: production
         if: github.ref == 'refs/heads/main'
 
-      - name: Deploy to Firebase Hosting (Staging)
-        uses: FirebaseExtended/action-hosting-deploy@v0
+      - name: Deploy to Firebase App Hosting (Staging)
+        uses: FirebaseExtended/firebase-app-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HADOTI_DAILY_MART_467808 }}'
-          channelId: staging
           projectId: hadoti-daily-mart-467808
-          target: staging
+          expires: 30d
         if: github.ref == 'refs/heads/staging'
