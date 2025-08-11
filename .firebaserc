@@ -1,0 +1,18 @@
+{
+  "projects": {
+    "staging": "hdm-staging",
+    "production": "hadoti-daily-mart-467808"
+  },
+  "targets": {
+    "staging": {
+      "hosting": {
+        "target": "staging"
+      }
+    },
+    "production": {
+      "hosting": {
+        "target": "production"
+      }
+    }
+  }
+}

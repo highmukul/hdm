@@ -5,7 +5,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const SalesChart = () => {
-    const { stats, loading, error } = useAdminStats();
+    const { stats, loading, error } = useAdminStats('sales');
 
     const data = {
         labels: stats.salesByDay?.map(s => s.date) || [],

@@ -20,8 +20,8 @@ const BannerForm = ({ banner, onSave, onCancel }) => {
     }, [banner, setValue]);
 
     const handleUploadStart = () => setIsUploading(true);
-    const handleUploadComplete = (urls) => {
-        setImageUrl(urls[0]);
+    const handleUploadComplete = (url) => {
+        setImageUrl(url);
         setIsUploading(false);
     };
 
@@ -83,7 +83,11 @@ const BannerForm = ({ banner, onSave, onCancel }) => {
 
             <div>
                 <label className="block font-medium">Upload Image</label>
-                <Uploader onUploadStart={handleUploadStart} onUploadComplete={handleUploadComplete} />
+                <Uploader 
+                    onUploadStart={handleUploadStart} 
+                    onUploadComplete={handleUploadComplete} 
+                    multiple={false} 
+                />
                 {imageUrl && <img src={imageUrl} alt="Uploaded banner" className="mt-4 w-1/3 rounded-lg shadow-md" />}
             </div>
 

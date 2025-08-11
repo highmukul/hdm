@@ -5,13 +5,19 @@ import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
-const Uploader = ({ onUploadComplete }) => {
+const Uploader = ({ onUploadComplete, multiple = false }) => {
     const [files, setFiles] = useState([]);
     const [uploading, setUploading] = useState(false);
     const [progress, setProgress] = useState({});
 
     const handleFileChange = (e) => {
-        setFiles(Array.from(e.target.files));
+        const selectedFiles = Array.from(e.target.files);
+        if (!multiple && selectedFiles.length > 1) {
+            toast.error("Please select only one file.");
+            setFiles([selectedFiles[0]]);
+        } else {
+            setFiles(selectedFiles);
+        }
     };
 
     const handleUpload = async () => {
@@ -42,8 +48,9 @@ const Uploader = ({ onUploadComplete }) => {
 
         try {
             const uploadedFiles = await Promise.all(promises);
-            onUploadComplete(uploadedFiles.map(f => f.url));
-            toast.success("All images uploaded successfully!");
+            const urls = uploadedFiles.map(f => f.url);
+            onUploadComplete(multiple ? urls : urls[0]);
+            toast.success(multiple ? "All images uploaded successfully!" : "Image uploaded successfully!");
         } catch (error) {
             console.error("Error during upload: ", error);
         } finally {
@@ -58,7 +65,7 @@ const Uploader = ({ onUploadComplete }) => {
             <div className="flex items-center space-x-4">
                 <input 
                     type="file" 
-                    multiple 
+                    multiple={multiple} 
                     onChange={handleFileChange} 
                     className="flex-grow file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
                 />

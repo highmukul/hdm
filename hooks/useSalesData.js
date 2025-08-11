@@ -1,40 +1,58 @@
 import { useState, useEffect } from 'react';
 import { collection, getDocs, query, where, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import { format, eachDayOfInterval, startOfDay } from 'date-fns';
 
-const useSalesData = (days = 30) => {
+const useSalesData = (dateRange) => {
     const [salesData, setSalesData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchSalesData = async () => {
-            try {
-                const now = new Date();
-                const pastDate = new Date();
-                pastDate.setDate(now.getDate() - days);
-                const pastTimestamp = Timestamp.fromDate(pastDate);
+            if (!dateRange.startDate || !dateRange.endDate) return;
 
+            setLoading(true);
+            setError(null);
+            
+            try {
+                // 1. Create a map of all dates in the range with 0 sales
+                const dateInterval = eachDayOfInterval({
+                    start: startOfDay(dateRange.startDate),
+                    end: startOfDay(dateRange.endDate)
+                });
+                
+                const salesByDate = new Map(
+                    dateInterval.map(date => [format(date, 'yyyy-MM-dd'), { date: format(date, 'MMM d'), total: 0 }])
+                );
+
+                // 2. Fetch orders within the date range
                 const ordersCollection = collection(db, 'orders');
-                const q = query(ordersCollection, where('createdAt', '>=', pastTimestamp));
+                const q = query(
+                    ordersCollection, 
+                    where('createdAt', '>=', dateRange.startDate),
+                    where('createdAt', '<=', dateRange.endDate)
+                );
                 
                 const querySnapshot = await getDocs(q);
 
-                const data = querySnapshot.docs.reduce((acc, doc) => {
+                // 3. Populate sales data from fetched orders
+                querySnapshot.docs.forEach(doc => {
                     const order = doc.data();
                     if (order.createdAt && typeof order.createdAt.toDate === 'function') {
-                        const date = order.createdAt.toDate().toLocaleDateString('en-CA'); // YYYY-MM-DD
-                        const existingEntry = acc.find(item => item.date === date);
-                        if (existingEntry) {
-                            existingEntry.total += order.total;
-                        } else {
-                            acc.push({ date, total: order.total });
+                        const dateStr = format(order.createdAt.toDate(), 'yyyy-MM-dd');
+                        if (salesByDate.has(dateStr)) {
+                            salesByDate.get(dateStr).total += order.total;
                         }
                     }
-                    return acc;
-                }, []).sort((a, b) => new Date(a.date) - new Date(b.date));
+                });
                 
-                setSalesData(data);
+                // 4. Convert map to array and sort
+                const formattedData = Array.from(salesByDate.values())
+                    .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                setSalesData(formattedData);
+
             } catch (err) {
                 setError(err);
                 console.error("Error fetching sales data:", err);
@@ -44,7 +62,7 @@ const useSalesData = (days = 30) => {
         };
 
         fetchSalesData();
-    }, [days]);
+    }, [dateRange]);
 
     return { salesData, loading, error };
 };

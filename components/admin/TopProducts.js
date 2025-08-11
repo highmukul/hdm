@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 const TopProducts = ({ products }) => {
     return (
         <ul className="divide-y divide-gray-200">
@@ -13,6 +15,11 @@ const TopProducts = ({ products }) => {
                     <div className="text-right">
                         <p className="text-sm font-medium text-gray-900">₹{product.price.toFixed(2)}</p>
                         <p className="text-sm text-gray-500">{product.sales} sales</p>
+                    </div>
+                    <div className="ml-4">
+                        <Link href={`/admin/products/${product.id}`} className="text-indigo-600 hover:text-indigo-900">
+                            View
+                        </Link>
                     </div>
                 </li>
             ))}

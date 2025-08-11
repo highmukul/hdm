@@ -86,7 +86,7 @@ export const CartProvider = ({ children }) => {
   }, [cartItems]);
 
   const cartTotal = useMemo(() => {
-    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+    return cartItems.reduce((total, item) => total + (item.salePrice * item.quantity), 0);
   }, [cartItems]);
 
   const value = { cartItems, loading, addToCart, updateQuantity, removeFromCart, clearCart, cartCount, cartTotal };
