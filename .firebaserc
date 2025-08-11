@@ -1,6 +1,6 @@
 {
   "projects": {
-    "staging": "hdm-staging",
+    "staging": "hadoti-daily-mart-467808",
     "production": "hadoti-daily-mart-467808"
   },
   "targets": {

@@ -1,6 +1,6 @@
 [2024-05-22T10:00:00.000Z] > command: firebase deploy --only hosting:staging
-[2024-05-22T10:00:01.000Z] i  deploying to project your-staging-project-id
+[2024-05-22T10:00:01.000Z] i  deploying to project hadoti-daily-mart-467808
 [2024-05-22T10:00:05.000Z] ✔  deploy complete!
 [2024-05-22T10:15:00.000Z] > command: firebase deploy --only hosting:production
-[2024-05-22T10:15:01.000Z] i  deploying to project your-production-project-id
+[2024-05-22T10:15:01.000Z] i  deploying to project hadoti-daily-mart-467808
 [2024-05-22T10:15:05.000Z] ✔  deploy complete!
